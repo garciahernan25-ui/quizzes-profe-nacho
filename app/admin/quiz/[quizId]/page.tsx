@@ -46,7 +46,8 @@ export default function PreguntasDelQuiz() {
     <main style={{ padding: "3rem", maxWidth: "800px", margin: "0 auto" }}>
       <a href="/admin" style={{ color: "#2563eb", textDecoration: "none" }}>← Volver al panel</a>
       <h1 style={{ fontSize: "1.8rem", fontWeight: "bold", margin: "1rem 0" }}>Preguntas del quiz</h1>
-            <a href="/admin/nueva-pregunta" style={{
+
+      <a href={`/admin/nueva-pregunta?ronda=${quizId}`} style={{
         display: "inline-block", marginBottom: "1.5rem", padding: "0.7rem 1.2rem",
         borderRadius: "10px", background: "#16a34a", color: "white",
         textDecoration: "none", fontWeight: "bold",
