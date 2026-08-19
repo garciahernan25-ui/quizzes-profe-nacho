@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { db } from "../../../lib/db";
 import { scores } from "../../../lib/db/schema";
 import { v4 as uuid } from "uuid";
