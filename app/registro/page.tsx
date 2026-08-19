@@ -43,7 +43,11 @@ export default function Registro() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        fullName, username, password, modality, school,
+        fullName,
+        username,
+        password,
+        modality,
+        school,
         year: usaAnio ? year : null,
         division: usaAnio ? division : null,
         extraInfo: usaExtra ? extraInfo : null,
@@ -59,11 +63,20 @@ export default function Registro() {
   }
 
   const label = { display: "block", fontWeight: "bold", margin: "1rem 0 0.3rem" } as const;
-  const input = { width: "100%", padding: "0.6rem", borderRadius: "8px", border: "1px solid #ccc", fontSize: "1rem" } as const;
+  const input = {
+    width: "100%",
+    padding: "0.6rem",
+    borderRadius: "8px",
+    border: "1px solid var(--card-border)",
+    background: "var(--card-bg)",
+    color: "var(--foreground)",
+    fontSize: "1rem",
+    boxSizing: "border-box",
+  } as const;
 
   return (
     <main style={{ padding: "3rem", maxWidth: "500px", margin: "0 auto" }}>
-      <a href="/" style={{ color: "#2563eb", textDecoration: "none" }}>← Volver</a>
+      <a href="/" style={{ color: "var(--button-bg)", textDecoration: "none" }}>← Volver</a>
       <h1 style={{ fontSize: "1.8rem", fontWeight: "bold", margin: "1rem 0" }}>Crear cuenta de estudiante</h1>
 
       <label style={label}>Nombre y apellido</label>
@@ -110,7 +123,18 @@ export default function Registro() {
       <button
         onClick={registrar}
         disabled={guardando}
-        style={{ marginTop: "1.5rem", width: "100%", padding: "0.9rem", borderRadius: "10px", border: "none", background: "#16a34a", color: "white", fontSize: "1.1rem", fontWeight: "bold", cursor: "pointer" }}
+        style={{
+          marginTop: "1.5rem",
+          width: "100%",
+          padding: "0.9rem",
+          borderRadius: "10px",
+          border: "none",
+          background: "#16a34a",
+          color: "white",
+          fontSize: "1.1rem",
+          fontWeight: "bold",
+          cursor: "pointer",
+        }}
       >
         {guardando ? "Creando..." : "Crear cuenta"}
       </button>
