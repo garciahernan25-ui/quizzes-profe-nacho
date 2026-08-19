@@ -1,10 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 
 type Ronda = { id: string; name: string };
 
 export default function NuevaPregunta() {
+  const searchParams = useSearchParams();
+  const rondaFija = searchParams.get("ronda");
+
   const [rondas, setRondas] = useState<Ronda[]>([]);
   const [roundId, setRoundId] = useState("");
   const [pregunta, setPregunta] = useState("");
@@ -19,13 +23,19 @@ export default function NuevaPregunta() {
   const [guardando, setGuardando] = useState(false);
 
   useEffect(() => {
-    fetch("/api/rondas")
-      .then((r) => r.json())
-      .then((data) => {
-        setRondas(data);
-        if (data.length > 0) setRoundId(data[0].id);
-      });
-  }, []);
+    // Si vino una ronda fija por la dirección, la usamos directo
+    if (rondaFija) {
+      setRoundId(rondaFija);
+    } else {
+      // Si no, cargamos la lista para elegir
+      fetch("/api/rondas")
+        .then((r) => r.json())
+        .then((data) => {
+          setRondas(data);
+          if (data.length > 0) setRoundId(data[0].id);
+        });
+    }
+  }, [rondaFija]);
 
   function cambiarOpcion(i: number, valor: string) {
     const nuevas = [...opciones];
@@ -76,10 +86,9 @@ export default function NuevaPregunta() {
 
   async function guardar() {
     if (!roundId || !pregunta) {
-      setMensaje("Completá la ronda y la pregunta.");
+      setMensaje("Completá la pregunta.");
       return;
     }
-    // Cada opción debe tener texto O imagen
     for (let i = 0; i < 4; i++) {
       if (!opciones[i] && !opcionesImg[i]) {
         setMensaje(`La opción ${i + 1} necesita texto o una imagen.`);
@@ -104,7 +113,7 @@ export default function NuevaPregunta() {
     });
     setGuardando(false);
     if (res.ok) {
-      setMensaje("✓ ¡Pregunta guardada!");
+      setMensaje("✓ ¡Pregunta guardada! Podés cargar otra.");
       setPregunta("");
       setOpciones(["", "", "", ""]);
       setOpcionesImg(["", "", "", ""]);
@@ -124,12 +133,16 @@ export default function NuevaPregunta() {
       <a href="/admin" style={{ color: "#2563eb", textDecoration: "none" }}>← Volver al panel</a>
       <h1 style={{ fontSize: "1.8rem", fontWeight: "bold", margin: "1rem 0" }}>Nueva pregunta</h1>
 
-      <label style={label}>Ronda</label>
-      <select value={roundId} onChange={(e) => setRoundId(e.target.value)} style={input}>
-        {rondas.map((r) => (
-          <option key={r.id} value={r.id}>{r.name}</option>
-        ))}
-      </select>
+      {!rondaFija && (
+        <>
+          <label style={label}>Ronda</label>
+          <select value={roundId} onChange={(e) => setRoundId(e.target.value)} style={input}>
+            {rondas.map((r) => (
+              <option key={r.id} value={r.id}>{r.name}</option>
+            ))}
+          </select>
+        </>
+      )}
 
       <label style={label}>Pregunta</label>
       <input value={pregunta} onChange={(e) => setPregunta(e.target.value)} style={input} placeholder="Escribí la pregunta" />

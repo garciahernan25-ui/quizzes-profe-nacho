@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { db } from "../../../lib/db";
 import { quizzes, rounds } from "../../../lib/db/schema";
 import { v4 as uuid } from "uuid";
@@ -33,8 +34,9 @@ export async function POST(request: Request) {
     });
 
     // Crear una sección inicial para que puedas cargarle preguntas enseguida
-    await db.insert(rounds).values({
-      id: uuid(),
+     const rondaId = uuid();
+      await db.insert(rounds).values({
+      id: rondaId,
       quizId: quizId,
       name: "General",
       icon: datos.icon || "📝",
@@ -42,7 +44,7 @@ export async function POST(request: Request) {
       order: 0,
     });
 
-    return NextResponse.json({ ok: true, slug });
+  return NextResponse.json({ ok: true, slug, rondaId });
   } catch (error) {
     console.error("Error al crear el quiz:", error);
     return NextResponse.json({ ok: false, error: "No se pudo crear" }, { status: 500 });

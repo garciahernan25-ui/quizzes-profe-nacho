@@ -10,6 +10,7 @@ export default function NuevoQuiz() {
   const [level, setLevel] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [guardando, setGuardando] = useState(false);
+  const [rondaCreada, setRondaCreada] = useState("");
 
   async function guardar() {
     if (!title) {
@@ -23,14 +24,11 @@ export default function NuevoQuiz() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title, description, icon, subject, level }),
     });
+    const data = await res.json();
     setGuardando(false);
-    if (res.ok) {
-      setMensaje("✓ ¡Quiz creado! Ya podés cargarle preguntas.");
-      setTitle("");
-      setDescription("");
-      setIcon("");
-      setSubject("");
-      setLevel("");
+    if (res.ok && data.ok) {
+      setMensaje("✓ ¡Quiz creado!");
+      setRondaCreada(data.rondaId);
     } else {
       setMensaje("✗ Hubo un error al crear el quiz.");
     }
@@ -38,6 +36,25 @@ export default function NuevoQuiz() {
 
   const label = { display: "block", fontWeight: "bold", margin: "1rem 0 0.3rem" } as const;
   const input = { width: "100%", padding: "0.6rem", borderRadius: "8px", border: "1px solid #ccc", fontSize: "1rem" } as const;
+
+  // Si el quiz ya se creó, mostramos la pantalla de "listo, cargá preguntas"
+  if (rondaCreada) {
+    return (
+      <main style={{ padding: "3rem", maxWidth: "600px", margin: "0 auto", textAlign: "center" }}>
+        <h1 style={{ fontSize: "1.8rem", fontWeight: "bold", margin: "1rem 0" }}>✓ ¡Quiz creado!</h1>
+        <p style={{ color: "#555", marginBottom: "2rem" }}>Ahora podés cargarle preguntas.</p>
+        <a href={`/admin/nueva-pregunta?ronda=${rondaCreada}`} style={{
+          display: "inline-block", padding: "0.9rem 1.5rem", borderRadius: "10px",
+          background: "#16a34a", color: "white", textDecoration: "none",
+          fontWeight: "bold", fontSize: "1.1rem", marginBottom: "1rem",
+        }}>
+          + Agregar preguntas a este quiz
+        </a>
+        <br />
+        <a href="/admin" style={{ color: "#2563eb", textDecoration: "none" }}>← Volver al panel</a>
+      </main>
+    );
+  }
 
   return (
     <main style={{ padding: "3rem", maxWidth: "600px", margin: "0 auto" }}>
