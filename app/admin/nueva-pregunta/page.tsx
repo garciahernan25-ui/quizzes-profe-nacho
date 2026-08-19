@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
 type Ronda = { id: string; name: string };
 
-export default function NuevaPregunta() {
+function FormularioNuevaPregunta() {
   const searchParams = useSearchParams();
   const rondaFija = searchParams.get("ronda");
 
@@ -190,5 +190,13 @@ export default function NuevaPregunta() {
 
       {mensaje && <p style={{ marginTop: "1rem", textAlign: "center", fontWeight: "bold" }}>{mensaje}</p>}
     </main>
+  );
+}
+
+export default function NuevaPregunta() {
+  return (
+    <Suspense fallback={<div style={{ padding: "2rem", textAlign: "center" }}>Cargando...</div>}>
+      <FormularioNuevaPregunta />
+    </Suspense>
   );
 }
