@@ -12,7 +12,9 @@ export async function POST(request: Request) {
       .update(questions)
       .set({
         question: datos.question,
+        questionImage: datos.questionImage || null,
         options: JSON.stringify(datos.options),
+        optionImages: datos.optionImages ? JSON.stringify(datos.optionImages) : null,
         correctIndex: datos.correctIndex,
         explanation: datos.explanation || null,
       })

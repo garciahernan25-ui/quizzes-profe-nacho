@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { db } from "../../../../lib/db";
 import { questions } from "../../../../lib/db/schema";
 import { eq } from "drizzle-orm";
@@ -18,7 +20,9 @@ export async function POST(request: Request) {
       pregunta: {
         id: pregunta.id,
         question: pregunta.question,
+        questionImage: pregunta.questionImage || null,
         options: JSON.parse(pregunta.options),
+        optionImages: pregunta.optionImages ? JSON.parse(pregunta.optionImages) : null,
         correctIndex: pregunta.correctIndex,
         explanation: pregunta.explanation || "",
       },

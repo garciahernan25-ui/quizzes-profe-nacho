@@ -46,13 +46,24 @@ export default function NuevaSeccion() {
   }
 
   const label = { display: "block", fontWeight: "bold", margin: "1rem 0 0.3rem" } as const;
-  const input = { width: "100%", padding: "0.6rem", borderRadius: "8px", border: "1px solid #ccc", fontSize: "1rem" } as const;
+  const input = {
+    width: "100%",
+    padding: "0.6rem",
+    borderRadius: "8px",
+    border: "1px solid var(--card-border)",
+    background: "var(--card-bg)",
+    color: "var(--foreground)",
+    fontSize: "1rem",
+    boxSizing: "border-box",
+  } as const;
 
   return (
-    <main style={{ padding: "3rem", maxWidth: "600px", margin: "0 auto" }}>
-      <a href="/admin" style={{ color: "#2563eb", textDecoration: "none" }}>← Volver al panel</a>
+    <main style={{ padding: "2rem 1rem", maxWidth: "600px", margin: "0 auto" }}>
+      <a href="/admin" style={{ color: "var(--button-bg)", textDecoration: "none" }}>← Volver al panel</a>
       <h1 style={{ fontSize: "1.8rem", fontWeight: "bold", margin: "1rem 0" }}>Nueva sección</h1>
-      <p style={{ color: "#555" }}>Una sección es una parte dentro de un quiz (por ejemplo un nivel o un subtema).</p>
+      <p style={{ color: "var(--text-secondary)" }}>
+        Una sección es una parte dentro de un quiz (por ejemplo un nivel o un subtema).
+      </p>
 
       <label style={label}>¿A qué quiz pertenece?</label>
       <select value={quizId} onChange={(e) => setQuizId(e.target.value)} style={input}>
@@ -74,9 +85,16 @@ export default function NuevaSeccion() {
         onClick={guardar}
         disabled={guardando}
         style={{
-          marginTop: "1.5rem", width: "100%", padding: "0.9rem", borderRadius: "10px",
-          border: "none", background: "#2563eb", color: "white", fontSize: "1.1rem",
-          fontWeight: "bold", cursor: "pointer",
+          marginTop: "1.5rem",
+          width: "100%",
+          padding: "0.9rem",
+          borderRadius: "10px",
+          border: "none",
+          background: "var(--button-bg)",
+          color: "var(--button-text)",
+          fontSize: "1.1rem",
+          fontWeight: "bold",
+          cursor: "pointer",
         }}
       >
         {guardando ? "Creando..." : "Crear sección"}
