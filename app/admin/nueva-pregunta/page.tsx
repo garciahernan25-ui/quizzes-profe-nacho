@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense, useRef } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
 type Ronda = { id: string; name: string };
@@ -21,10 +21,6 @@ function FormularioNuevaPregunta() {
   const [subiendoOp, setSubiendoOp] = useState<number | null>(null);
   const [mensaje, setMensaje] = useState("");
   const [guardando, setGuardando] = useState(false);
-
-  // Refs para los inputs de archivo (para poder dispararlos desde botones)
-  const inputPreguntaRef = useRef<HTMLInputElement>(null);
-  const inputOpcionRefs = useRef<(HTMLInputElement | null)[]>([null, null, null, null]);
 
   useEffect(() => {
     if (rondaFija) {
@@ -129,18 +125,6 @@ function FormularioNuevaPregunta() {
 
   const label = { display: "block", fontWeight: "bold", margin: "1rem 0 0.3rem" } as const;
   const input = { width: "100%", padding: "0.6rem", borderRadius: "8px", border: "1px solid #ccc", fontSize: "1rem" } as const;
-  const botonImagen = {
-    display: "inline-block",
-    padding: "0.5rem 1rem",
-    borderRadius: "8px",
-    border: "1px solid #2563eb",
-    background: "#eff6ff",
-    color: "#2563eb",
-    cursor: "pointer",
-    fontSize: "0.9rem",
-    fontWeight: "bold",
-    marginTop: "0.3rem",
-  } as const;
 
   return (
     <main style={{ padding: "3rem", maxWidth: "600px", margin: "0 auto" }}>
@@ -161,95 +145,32 @@ function FormularioNuevaPregunta() {
       <label style={label}>Pregunta</label>
       <input value={pregunta} onChange={(e) => setPregunta(e.target.value)} style={input} placeholder="Escribí la pregunta" />
 
-      {/* Imagen de la pregunta */}
       <label style={label}>Imagen de la pregunta (opcional)</label>
-      <input
-        ref={inputPreguntaRef}
-        type="file"
-        accept="image/*"
-        style={{ display: "none" }}
-        onChange={subirImagenPregunta}
-      />
-      <button
-        type="button"
-        style={botonImagen}
-        onClick={() => inputPreguntaRef.current?.click()}
-        disabled={subiendo}
-      >
-        {subiendo ? "Subiendo..." : "📷 Subir imagen"}
-      </button>
+      <input type="file" accept="image/*" onChange={subirImagenPregunta} />
+      {subiendo && <p style={{ color: "#888", marginTop: "0.5rem" }}>Subiendo imagen...</p>}
       {imagenUrl && (
         <div style={{ marginTop: "0.8rem" }}>
           <img src={imagenUrl} alt="" style={{ maxWidth: "100%", borderRadius: "8px", border: "1px solid #ddd" }} />
-          <button
-            onClick={() => setImagenUrl("")}
-            style={{
-              display: "block",
-              marginTop: "0.5rem",
-              padding: "0.3rem 0.7rem",
-              borderRadius: "6px",
-              border: "1px solid #ef4444",
-              background: "white",
-              color: "#ef4444",
-              cursor: "pointer",
-              fontSize: "0.85rem",
-            }}
-          >
+          <button onClick={() => setImagenUrl("")} style={{ display: "block", marginTop: "0.5rem", padding: "0.3rem 0.7rem", borderRadius: "6px", border: "1px solid #ef4444", background: "white", color: "#ef4444", cursor: "pointer", fontSize: "0.85rem" }}>
             Quitar imagen
           </button>
         </div>
       )}
 
-      {/* Opciones */}
       <label style={label}>Opciones (marcá la correcta) — cada una puede ser texto y/o imagen</label>
       {opciones.map((op, i) => (
         <div key={i} style={{ border: "1px solid #eee", borderRadius: "10px", padding: "0.8rem", marginBottom: "0.8rem" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
             <input type="radio" name="correcta" checked={correcta === i} onChange={() => setCorrecta(i)} />
-            <input
-              value={op}
-              onChange={(e) => cambiarOpcion(i, e.target.value)}
-              style={{ ...input, flex: 1 }}
-              placeholder={`Opción ${i + 1} (texto)`}
-            />
+            <input value={op} onChange={(e) => cambiarOpcion(i, e.target.value)} style={{ ...input, flex: 1 }} placeholder={`Opción ${i + 1} (texto)`} />
           </div>
-
-          {/* Imagen de la opción */}
           <div style={{ marginTop: "0.5rem", paddingLeft: "1.5rem" }}>
-            <input
-              ref={(el) => {
-                inputOpcionRefs.current[i] = el;
-              }}
-              type="file"
-              accept="image/*"
-              style={{ display: "none" }}
-              onChange={(e) => subirImagenOpcion(i, e)}
-            />
-            <button
-              type="button"
-              style={botonImagen}
-              onClick={() => inputOpcionRefs.current[i]?.click()}
-              disabled={subiendoOp === i}
-            >
-              {subiendoOp === i ? "Subiendo..." : "📷 Subir imagen"}
-            </button>
+            <input type="file" accept="image/*" onChange={(e) => subirImagenOpcion(i, e)} />
+            {subiendoOp === i && <span style={{ color: "#888", fontSize: "0.85rem" }}> subiendo...</span>}
             {opcionesImg[i] && (
               <div style={{ marginTop: "0.4rem" }}>
                 <img src={opcionesImg[i]} alt="" style={{ maxWidth: "120px", borderRadius: "6px", border: "1px solid #ddd" }} />
-                <button
-                  onClick={() => quitarImagenOpcion(i)}
-                  style={{
-                    display: "block",
-                    marginTop: "0.3rem",
-                    padding: "0.2rem 0.6rem",
-                    borderRadius: "6px",
-                    border: "1px solid #ef4444",
-                    background: "white",
-                    color: "#ef4444",
-                    cursor: "pointer",
-                    fontSize: "0.8rem",
-                  }}
-                >
+                <button onClick={() => quitarImagenOpcion(i)} style={{ display: "block", marginTop: "0.3rem", padding: "0.2rem 0.6rem", borderRadius: "6px", border: "1px solid #ef4444", background: "white", color: "#ef4444", cursor: "pointer", fontSize: "0.8rem" }}>
                   Quitar
                 </button>
               </div>
@@ -259,29 +180,9 @@ function FormularioNuevaPregunta() {
       ))}
 
       <label style={label}>Explicación (opcional)</label>
-      <textarea
-        value={explicacion}
-        onChange={(e) => setExplicacion(e.target.value)}
-        style={{ ...input, minHeight: "70px" }}
-        placeholder="Por qué es correcta"
-      />
+      <textarea value={explicacion} onChange={(e) => setExplicacion(e.target.value)} style={{ ...input, minHeight: "70px" }} placeholder="Por qué es correcta" />
 
-      <button
-        onClick={guardar}
-        disabled={guardando}
-        style={{
-          marginTop: "1.5rem",
-          width: "100%",
-          padding: "0.9rem",
-          borderRadius: "10px",
-          border: "none",
-          background: "#2563eb",
-          color: "white",
-          fontSize: "1.1rem",
-          fontWeight: "bold",
-          cursor: "pointer",
-        }}
-      >
+      <button onClick={guardar} disabled={guardando} style={{ marginTop: "1.5rem", width: "100%", padding: "0.9rem", borderRadius: "10px", border: "none", background: "#2563eb", color: "white", fontSize: "1.1rem", fontWeight: "bold", cursor: "pointer" }}>
         {guardando ? "Guardando..." : "Guardar pregunta"}
       </button>
 
