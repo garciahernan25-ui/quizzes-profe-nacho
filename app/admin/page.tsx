@@ -29,7 +29,7 @@ export default async function AdminPage() {
   );
 
   return (
-    <main style={{ padding: "3rem", maxWidth: "1000px", margin: "0 auto" }}>
+    <main style={{ padding: "1rem", maxWidth: "1000px", margin: "0 auto" }}>
       <h1 style={{ fontSize: "2rem", fontWeight: "bold", marginBottom: "0.5rem" }}>
         Panel de administración
       </h1>
@@ -38,75 +38,39 @@ export default async function AdminPage() {
         <BotonSalir />
       </div>
 
-      <a
-        href="/admin/seguimiento"
-        style={{
-          display: "inline-block",
-          marginBottom: "1.5rem",
-          padding: "0.7rem 1.2rem",
-          borderRadius: "10px",
-          background: "#7c3aed",
-          color: "white",
-          textDecoration: "none",
-          fontWeight: "bold",
-        }}
-      >
-        📊 Seguimiento de alumnos
-      </a>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.8rem", marginBottom: "1.5rem" }}>
+        <a href="/admin/seguimiento" style={{
+          display: "inline-block", padding: "0.7rem 1.2rem", borderRadius: "10px",
+          background: "#7c3aed", color: "white", textDecoration: "none", fontWeight: "bold",
+        }}>
+          📊 Seguimiento de alumnos
+        </a>
+        <a href="/admin/nuevo-quiz" style={{
+          display: "inline-block", padding: "0.7rem 1.2rem", borderRadius: "10px",
+          background: "#16a34a", color: "white", textDecoration: "none", fontWeight: "bold",
+        }}>
+          + Nuevo quiz
+        </a>
+        <a href="/admin/nueva-seccion" style={{
+          display: "inline-block", padding: "0.7rem 1.2rem", borderRadius: "10px",
+          background: "#0ea5e9", color: "white", textDecoration: "none", fontWeight: "bold",
+        }}>
+          + Nueva sección
+        </a>
+        <a href="/admin/preguntas" style={{
+          display: "inline-block", padding: "0.7rem 1.2rem", borderRadius: "10px",
+          background: "#6b7280", color: "white", textDecoration: "none", fontWeight: "bold",
+        }}>
+          Gestionar preguntas
+        </a>
+      </div>
 
       <p style={{ color: "var(--text-secondary)", marginBottom: "2rem" }}>
         Acá vas a poder gestionar tus quizzes.
       </p>
 
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.8rem", marginBottom: "1.5rem" }}>
-        <a
-          href="/admin/nuevo-quiz"
-          style={{
-            display: "inline-block",
-            padding: "0.7rem 1.2rem",
-            borderRadius: "10px",
-            background: "#16a34a",
-            color: "white",
-            textDecoration: "none",
-            fontWeight: "bold",
-          }}
-        >
-          + Nuevo quiz
-        </a>
-
-        <a
-          href="/admin/nueva-seccion"
-          style={{
-            display: "inline-block",
-            padding: "0.7rem 1.2rem",
-            borderRadius: "10px",
-            background: "#0ea5e9",
-            color: "white",
-            textDecoration: "none",
-            fontWeight: "bold",
-          }}
-        >
-          + Nueva sección
-        </a>
-
-        <a
-          href="/admin/preguntas"
-          style={{
-            display: "inline-block",
-            padding: "0.7rem 1.2rem",
-            borderRadius: "10px",
-            background: "#6b7280",
-            color: "white",
-            textDecoration: "none",
-            fontWeight: "bold",
-          }}
-        >
-          Gestionar preguntas
-        </a>
-      </div>
-
       <div style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "600px" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "650px" }}>
           <thead>
             <tr style={{ borderBottom: "2px solid var(--card-border)", textAlign: "left" }}>
               <th style={{ padding: "0.75rem" }}>Título</th>
@@ -132,19 +96,12 @@ export default async function AdminPage() {
                 <td style={{ padding: "0.75rem" }}>
                   <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap" }}>
                     <BotonCopiar slug={fila.slug} />
-                    <a
-                      href={`/admin/quiz/${fila.id}`}
-                      style={{
-                        padding: "0.4rem 0.8rem",
-                        borderRadius: "8px",
-                        border: "1px solid var(--card-border)",
-                        background: "var(--card-bg)",
-                        color: "var(--foreground)",
-                        textDecoration: "none",
-                        fontSize: "0.85rem",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
+                    <a href={`/admin/quiz/${fila.id}`} style={{
+                      padding: "0.4rem 0.8rem", borderRadius: "8px",
+                      border: "1px solid var(--card-border)",
+                      background: "var(--card-bg)", color: "var(--foreground)",
+                      textDecoration: "none", fontSize: "0.85rem", whiteSpace: "nowrap",
+                    }}>
                       Ver preguntas
                     </a>
                     <BotonBorrarQuiz quizId={fila.id} titulo={fila.title} />
