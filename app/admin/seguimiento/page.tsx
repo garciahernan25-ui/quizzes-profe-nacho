@@ -61,9 +61,9 @@ export default function Seguimiento() {
   }
   const nombresGrupos = Object.keys(grupos).sort();
 
-  function colorPromedio(p: number) {
-    if (p >= 70) return "#16a34a";
-    if (p >= 50) return "#f59e0b";
+  function colorNota(nota: number) {
+    if (nota >= 7) return "#16a34a";
+    if (nota >= 5) return "#f59e0b";
     return "#ef4444";
   }
 
@@ -86,8 +86,8 @@ export default function Seguimiento() {
         nombresGrupos.map((nombre) => {
           const delGrupo = grupos[nombre];
           const promGrupo = Math.round(
-            delGrupo.reduce((acc, a) => acc + a.promedio, 0) / delGrupo.length
-          );
+            delGrupo.reduce((acc, a) => acc + a.promedio, 0) / delGrupo.length * 10
+          ) / 10;
           return (
             <div key={nombre} style={{ marginBottom: "2.5rem" }}>
               <div
@@ -103,8 +103,8 @@ export default function Seguimiento() {
                   {nombre}
                 </div>
                 <div style={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}>
-                  {delGrupo.length} alumno(s) · promedio del grupo:{" "}
-                  <b style={{ color: colorPromedio(promGrupo) }}>{promGrupo}%</b>
+                  {delGrupo.length} alumno(s) · nota promedio del grupo:{" "}
+                  <b style={{ color: colorNota(promGrupo) }}>{promGrupo.toFixed(1)}</b>
                 </div>
               </div>
 
@@ -140,10 +140,10 @@ export default function Seguimiento() {
                           style={{
                             fontSize: "0.85rem",
                             fontWeight: "bold",
-                            color: a.cantQuizzes > 0 ? colorPromedio(a.promedio) : "var(--text-muted)",
+                            color: a.cantQuizzes > 0 ? colorNota(a.promedio) : "var(--text-muted)",
                           }}
                         >
-                          {a.cantQuizzes > 0 ? `${a.promedio}%` : "—"}
+                          {a.cantQuizzes > 0 ? `${a.promedio.toFixed(1)} / 10` : "—"}
                         </span>
                       </div>
 

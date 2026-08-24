@@ -8,19 +8,17 @@ export async function GET() {
     const alumnos = await db.select().from(students);
     const todosPuntajes = await db.select().from(scores);
 
-    // Para cada alumno, calcular cantidad de quizzes y promedio %
     const alumnosConDatos = alumnos.map((alumno) => {
-      // Los puntajes de este alumno (guardamos su id en playerName)
       const suyos = todosPuntajes.filter((s) => s.playerName === alumno.id);
 
       let promedio = 0;
       if (suyos.length > 0) {
-        // % de cada partida = correctas / total * 100
-        const suma = suyos.reduce((acc, s) => {
-          const pct = s.totalQuestions > 0 ? (s.correctAnswers / s.totalQuestions) * 100 : 0;
-          return acc + pct;
+        // Nota de cada partida = (correctas / total) * 10
+        const sumaNotas = suyos.reduce((acc, s) => {
+          const nota = s.totalQuestions > 0 ? (s.correctAnswers / s.totalQuestions) * 10 : 0;
+          return acc + nota;
         }, 0);
-        promedio = Math.round(suma / suyos.length);
+        promedio = Math.round((sumaNotas / suyos.length) * 10) / 10; // redondeo a 1 decimal
       }
 
       return {

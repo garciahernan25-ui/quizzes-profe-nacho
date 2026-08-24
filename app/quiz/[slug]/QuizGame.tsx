@@ -32,12 +32,12 @@ export default function QuizGame({
   const [rondaActiva, setRondaActiva] = useState<Ronda | null>(null);
   const [indice, setIndice] = useState(0);
   const [puntaje, setPuntaje] = useState(0);
+  const [correctas, setCorrectas] = useState(0); // NUEVO
   const [respondida, setRespondida] = useState(false);
   const [elegida, setElegida] = useState<number | null>(null);
   const [terminado, setTerminado] = useState(false);
   const [tiempo, setTiempo] = useState(100);
 
-  // Timer de bonus
   useEffect(() => {
     if (respondida || !rondaActiva || terminado) return;
     const t = setInterval(() => {
@@ -50,6 +50,7 @@ export default function QuizGame({
     setRondaActiva(ronda);
     setIndice(0);
     setPuntaje(0);
+    setCorrectas(0);
     setRespondida(false);
     setElegida(null);
     setTerminado(false);
@@ -64,6 +65,7 @@ export default function QuizGame({
     if (i === correcta) {
       const bonus = Math.round(tiempo / 2);
       setPuntaje((p) => p + 100 + bonus);
+      setCorrectas((c) => c + 1); // NUEVO
     }
   }
 
@@ -82,7 +84,8 @@ export default function QuizGame({
 
   async function guardarPuntaje() {
     if (!rondaActiva) return;
-    const correctas = Math.round((puntaje / 150) * rondaActiva.questions.length);
+    // Enviar nota como score (aunque no la usamos, para no romper API)
+    const nota = (correctas / rondaActiva.questions.length) * 10;
     try {
       await fetch("/api/guardar-puntaje", {
         method: "POST",
@@ -90,7 +93,7 @@ export default function QuizGame({
         body: JSON.stringify({
           quizId: null,
           roundId: rondaActiva.id,
-          score: puntaje,
+          score: Math.round(nota * 10), // entero de décimas
           totalQuestions: rondaActiva.questions.length,
           correctAnswers: correctas,
         }),
@@ -214,21 +217,24 @@ export default function QuizGame({
 
   // PANTALLA 3: resultado final
   if (terminado) {
-    const maximo = rondaActiva.questions.length * 150;
-    const pct = puntaje / maximo;
+    const nota = (correctas / rondaActiva.questions.length) * 10;
+    const notaRedondeada = Math.round(nota * 10) / 10;
     let mensaje = "A repasar y probar de nuevo.";
-    if (pct >= 0.85) mensaje = "¡Genio total! 🌟";
-    else if (pct >= 0.6) mensaje = "¡Muy bien!";
-    else if (pct >= 0.35) mensaje = "Bien encaminado.";
+    if (nota >= 8.5) mensaje = "¡Genio total! 🌟";
+    else if (nota >= 6) mensaje = "¡Muy bien!";
+    else if (nota >= 3.5) mensaje = "Bien encaminado.";
     return (
       <main style={{ padding: "3rem", maxWidth: "600px", margin: "0 auto", textAlign: "center" }}>
         <h1 style={{ fontSize: "1.6rem", color: "var(--text-secondary)" }}>
           {rondaActiva.name}
         </h1>
         <div style={{ fontSize: "3.5rem", fontWeight: "bold", color: "#f59e0b", margin: "1rem 0" }}>
-          {puntaje}
+          {notaRedondeada.toFixed(1)} <span style={{ fontSize: "1.5rem", color: "var(--text-muted)" }}>/ 10</span>
         </div>
-        <p style={{ fontSize: "1.2rem", marginBottom: "2rem" }}>{mensaje}</p>
+        <p style={{ fontSize: "1.2rem", marginBottom: "0.5rem" }}>{mensaje}</p>
+        <p style={{ color: "var(--text-secondary)", marginBottom: "2rem" }}>
+          Correctas: {correctas} de {rondaActiva.questions.length}
+        </p>
         <button
           onClick={volverInicio}
           style={{
