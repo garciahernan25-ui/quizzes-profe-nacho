@@ -39,28 +39,60 @@ export default async function AdminPage() {
       </div>
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: "0.8rem", marginBottom: "1.5rem" }}>
-        <a href="/admin/seguimiento" style={{
-          display: "inline-block", padding: "0.7rem 1.2rem", borderRadius: "10px",
-          background: "#7c3aed", color: "white", textDecoration: "none", fontWeight: "bold",
-        }}>
+        <a
+          href="/admin/seguimiento"
+          style={{
+            display: "inline-block",
+            padding: "0.7rem 1.2rem",
+            borderRadius: "10px",
+            background: "#7c3aed",
+            color: "white",
+            textDecoration: "none",
+            fontWeight: "bold",
+          }}
+        >
           📊 Seguimiento de alumnos
         </a>
-        <a href="/admin/nuevo-quiz" style={{
-          display: "inline-block", padding: "0.7rem 1.2rem", borderRadius: "10px",
-          background: "#16a34a", color: "white", textDecoration: "none", fontWeight: "bold",
-        }}>
+        <a
+          href="/admin/nuevo-quiz"
+          style={{
+            display: "inline-block",
+            padding: "0.7rem 1.2rem",
+            borderRadius: "10px",
+            background: "#16a34a",
+            color: "white",
+            textDecoration: "none",
+            fontWeight: "bold",
+          }}
+        >
           + Nuevo quiz
         </a>
-        <a href="/admin/nueva-seccion" style={{
-          display: "inline-block", padding: "0.7rem 1.2rem", borderRadius: "10px",
-          background: "#0ea5e9", color: "white", textDecoration: "none", fontWeight: "bold",
-        }}>
+        <a
+          href="/admin/nueva-seccion"
+          style={{
+            display: "inline-block",
+            padding: "0.7rem 1.2rem",
+            borderRadius: "10px",
+            background: "#0ea5e9",
+            color: "white",
+            textDecoration: "none",
+            fontWeight: "bold",
+          }}
+        >
           + Nueva sección
         </a>
-        <a href="/admin/preguntas" style={{
-          display: "inline-block", padding: "0.7rem 1.2rem", borderRadius: "10px",
-          background: "#6b7280", color: "white", textDecoration: "none", fontWeight: "bold",
-        }}>
+        <a
+          href="/admin/preguntas"
+          style={{
+            display: "inline-block",
+            padding: "0.7rem 1.2rem",
+            borderRadius: "10px",
+            background: "#6b7280",
+            color: "white",
+            textDecoration: "none",
+            fontWeight: "bold",
+          }}
+        >
           Gestionar preguntas
         </a>
       </div>
@@ -69,49 +101,72 @@ export default async function AdminPage() {
         Acá vas a poder gestionar tus quizzes.
       </p>
 
-      <div style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "650px" }}>
-          <thead>
-            <tr style={{ borderBottom: "2px solid var(--card-border)", textAlign: "left" }}>
-              <th style={{ padding: "0.75rem" }}>Título</th>
-              <th style={{ padding: "0.75rem" }}>Rondas</th>
-              <th style={{ padding: "0.75rem" }}>Preguntas</th>
-              <th style={{ padding: "0.75rem" }}>Estado</th>
-              <th style={{ padding: "0.75rem" }}>Enlace</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filas.map((fila) => (
-              <tr key={fila.id} style={{ borderBottom: "1px solid var(--card-border)" }}>
-                <td style={{ padding: "0.75rem", fontWeight: "bold" }}>{fila.title}</td>
-                <td style={{ padding: "0.75rem" }}>{fila.cantRondas}</td>
-                <td style={{ padding: "0.75rem" }}>{fila.cantPreguntas}</td>
-                <td style={{ padding: "0.75rem" }}>
-                  {fila.publicado ? (
-                    <span style={{ color: "#16a34a" }}>● Publicado</span>
-                  ) : (
-                    <span style={{ color: "var(--text-muted)" }}>○ Borrador</span>
-                  )}
-                </td>
-                <td style={{ padding: "0.75rem" }}>
-                  <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap" }}>
-                    <BotonCopiar slug={fila.slug} />
-                    <a href={`/admin/quiz/${fila.id}`} style={{
-                      padding: "0.4rem 0.8rem", borderRadius: "8px",
-                      border: "1px solid var(--card-border)",
-                      background: "var(--card-bg)", color: "var(--foreground)",
-                      textDecoration: "none", fontSize: "0.85rem", whiteSpace: "nowrap",
-                    }}>
-                      Ver preguntas
-                    </a>
-                    <BotonBorrarQuiz quizId={fila.id} titulo={fila.title} />
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {filas.length === 0 ? (
+        <p style={{ color: "var(--text-secondary)" }}>Todavía no hay quizzes creados.</p>
+      ) : (
+        <div style={{ display: "grid", gap: "1rem", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}>
+          {filas.map((fila) => (
+            <div
+              key={fila.id}
+              style={{
+                border: "1px solid var(--card-border)",
+                borderRadius: "12px",
+                background: "var(--card-bg)",
+                boxShadow: "var(--shadow)",
+                padding: "1rem",
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.5rem",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "0.5rem" }}>
+                <h2 style={{ fontSize: "1.2rem", fontWeight: "bold", margin: 0, wordBreak: "break-word" }}>
+                  {fila.title}
+                </h2>
+                <span
+                  style={{
+                    whiteSpace: "nowrap",
+                    fontSize: "0.85rem",
+                    fontWeight: "bold",
+                    color: fila.publicado ? "#16a34a" : "var(--text-muted)",
+                    border: `1px solid ${fila.publicado ? "#16a34a" : "var(--card-border)"}`,
+                    borderRadius: "20px",
+                    padding: "0.2rem 0.6rem",
+                    backgroundColor: fila.publicado ? "#dcfce7" : "transparent",
+                  }}
+                >
+                  {fila.publicado ? "● Publicado" : "○ Borrador"}
+                </span>
+              </div>
+
+              <div style={{ display: "flex", gap: "1rem", color: "var(--text-secondary)", fontSize: "0.9rem" }}>
+                <span>Rondas: {fila.cantRondas}</span>
+                <span>Preguntas: {fila.cantPreguntas}</span>
+              </div>
+
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginTop: "0.5rem" }}>
+                <BotonCopiar slug={fila.slug} />
+                <a
+                  href={`/admin/quiz/${fila.id}`}
+                  style={{
+                    padding: "0.4rem 0.8rem",
+                    borderRadius: "8px",
+                    border: "1px solid var(--button-bg)",
+                    background: "var(--card-bg)",
+                    color: "var(--button-bg)",
+                    textDecoration: "none",
+                    fontSize: "0.85rem",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  Ver preguntas
+                </a>
+                <BotonBorrarQuiz quizId={fila.id} titulo={fila.title} />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </main>
   );
 }
