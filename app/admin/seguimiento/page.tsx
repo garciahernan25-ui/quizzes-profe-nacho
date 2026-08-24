@@ -27,7 +27,6 @@ export default function Seguimiento() {
       });
   }, []);
 
-  // Armar el nombre del grupo de cada alumno
   function nombreGrupo(a: Alumno) {
     let grupo = `${a.modality} · ${a.school}`;
     if (a.extraInfo) grupo += ` · ${a.extraInfo}`;
@@ -36,7 +35,6 @@ export default function Seguimiento() {
     return grupo;
   }
 
-  // Agrupar alumnos por grupo
   const grupos: { [nombre: string]: Alumno[] } = {};
   for (const a of alumnos) {
     const g = nombreGrupo(a);
@@ -52,14 +50,20 @@ export default function Seguimiento() {
   }
 
   return (
-    <main style={{ padding: "3rem", maxWidth: "900px", margin: "0 auto" }}>
-      <a href="/admin" style={{ color: "#2563eb", textDecoration: "none" }}>← Volver al panel</a>
-      <h1 style={{ fontSize: "1.8rem", fontWeight: "bold", margin: "1rem 0" }}>Seguimiento de alumnos</h1>
+    <main style={{ padding: "2rem 1rem", maxWidth: "900px", margin: "0 auto" }}>
+      <a href="/admin" style={{ color: "var(--button-bg)", textDecoration: "none" }}>
+        ← Volver al panel
+      </a>
+      <h1 style={{ fontSize: "1.8rem", fontWeight: "bold", margin: "1rem 0" }}>
+        Seguimiento de alumnos
+      </h1>
 
       {cargando ? (
         <p>Cargando...</p>
       ) : alumnos.length === 0 ? (
-        <p style={{ color: "#555" }}>Todavía no hay alumnos registrados.</p>
+        <p style={{ color: "var(--text-secondary)" }}>
+          Todavía no hay alumnos registrados.
+        </p>
       ) : (
         nombresGrupos.map((nombre) => {
           const delGrupo = grupos[nombre];
@@ -68,35 +72,66 @@ export default function Seguimiento() {
           );
           return (
             <div key={nombre} style={{ marginBottom: "2.5rem" }}>
-              <div style={{ background: "#f3f4f6", padding: "0.8rem 1rem", borderRadius: "10px", marginBottom: "0.8rem" }}>
+              <div
+                style={{
+                  background: "var(--card-bg)",
+                  padding: "0.8rem 1rem",
+                  borderRadius: "10px",
+                  marginBottom: "0.8rem",
+                  border: "1px solid var(--card-border)",
+                }}
+              >
                 <div style={{ fontWeight: "bold", fontSize: "1.1rem" }}>{nombre}</div>
-                <div style={{ color: "#555", fontSize: "0.9rem" }}>
-                  {delGrupo.length} alumno(s) · promedio del grupo: <b style={{ color: colorPromedio(promGrupo) }}>{promGrupo}%</b>
+                <div style={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}>
+                  {delGrupo.length} alumno(s) · promedio del grupo:{" "}
+                  <b style={{ color: colorPromedio(promGrupo) }}>{promGrupo}%</b>
                 </div>
               </div>
 
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                <thead>
-                  <tr style={{ borderBottom: "2px solid #ddd", textAlign: "left" }}>
-                    <th style={{ padding: "0.6rem" }}>Alumno</th>
-                    <th style={{ padding: "0.6rem" }}>Quizzes jugados</th>
-                    <th style={{ padding: "0.6rem" }}>Promedio</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {delGrupo
-                    .sort((a, b) => a.fullName.localeCompare(b.fullName))
-                    .map((a) => (
-                      <tr key={a.id} style={{ borderBottom: "1px solid #eee" }}>
-                        <td style={{ padding: "0.6rem", fontWeight: "bold" }}>{a.fullName}</td>
-                        <td style={{ padding: "0.6rem" }}>{a.cantQuizzes}</td>
-                        <td style={{ padding: "0.6rem", fontWeight: "bold", color: colorPromedio(a.promedio) }}>
-                          {a.cantQuizzes > 0 ? `${a.promedio}%` : "—"}
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
+              <div style={{ overflowX: "auto" }}>
+                <table
+                  style={{
+                    width: "100%",
+                    borderCollapse: "collapse",
+                    minWidth: "500px",
+                  }}
+                >
+                  <thead>
+                    <tr style={{ borderBottom: "2px solid var(--card-border)", textAlign: "left" }}>
+                      <th style={{ padding: "0.6rem" }}>Alumno</th>
+                      <th style={{ padding: "0.6rem" }}>Quizzes jugados</th>
+                      <th style={{ padding: "0.6rem" }}>Promedio</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {delGrupo
+                      .sort((a, b) => a.fullName.localeCompare(b.fullName))
+                      .map((a) => (
+                        <tr key={a.id} style={{ borderBottom: "1px solid var(--card-border)" }}>
+                          <td
+                            style={{
+                              padding: "0.6rem",
+                              fontWeight: "bold",
+                              wordBreak: "break-word",
+                            }}
+                          >
+                            {a.fullName}
+                          </td>
+                          <td style={{ padding: "0.6rem" }}>{a.cantQuizzes}</td>
+                          <td
+                            style={{
+                              padding: "0.6rem",
+                              fontWeight: "bold",
+                              color: colorPromedio(a.promedio),
+                            }}
+                          >
+                            {a.cantQuizzes > 0 ? `${a.promedio}%` : "—"}
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           );
         })
