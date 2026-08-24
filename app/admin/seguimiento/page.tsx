@@ -18,14 +18,32 @@ export default function Seguimiento() {
   const [alumnos, setAlumnos] = useState<Alumno[]>([]);
   const [cargando, setCargando] = useState(true);
 
-  useEffect(() => {
+  function cargar() {
     fetch("/api/seguimiento")
       .then((r) => r.json())
       .then((data) => {
         setAlumnos(data);
         setCargando(false);
       });
+  }
+
+  useEffect(() => {
+    cargar();
   }, []);
+
+  async function borrarAlumno(id: string, nombre: string) {
+    if (!confirm(`¿Seguro que querés eliminar a ${nombre}?`)) return;
+    const res = await fetch("/api/estudiantes/borrar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+    if (res.ok) {
+      cargar();
+    } else {
+      alert("Hubo un error al eliminar al alumno.");
+    }
+  }
 
   function nombreGrupo(a: Alumno) {
     let grupo = `${a.modality} · ${a.school}`;
@@ -93,7 +111,7 @@ export default function Seguimiento() {
                   style={{
                     width: "100%",
                     borderCollapse: "collapse",
-                    minWidth: "500px",
+                    minWidth: "550px",
                   }}
                 >
                   <thead>
@@ -101,6 +119,7 @@ export default function Seguimiento() {
                       <th style={{ padding: "0.6rem" }}>Alumno</th>
                       <th style={{ padding: "0.6rem" }}>Quizzes jugados</th>
                       <th style={{ padding: "0.6rem" }}>Promedio</th>
+                      <th style={{ padding: "0.6rem" }}></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -126,6 +145,23 @@ export default function Seguimiento() {
                             }}
                           >
                             {a.cantQuizzes > 0 ? `${a.promedio}%` : "—"}
+                          </td>
+                          <td style={{ padding: "0.6rem", textAlign: "right" }}>
+                            <button
+                              onClick={() => borrarAlumno(a.id, a.fullName)}
+                              style={{
+                                padding: "0.3rem 0.7rem",
+                                borderRadius: "6px",
+                                border: "1px solid #ef4444",
+                                background: "var(--card-bg)",
+                                color: "#ef4444",
+                                cursor: "pointer",
+                                fontSize: "0.85rem",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              Eliminar
+                            </button>
                           </td>
                         </tr>
                       ))}
