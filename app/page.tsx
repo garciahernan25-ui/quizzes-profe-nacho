@@ -2,8 +2,13 @@ import { db } from "../lib/db";
 import { quizzes } from "../lib/db/schema";
 import { eq } from "drizzle-orm";
 import Link from "next/link";
+import { cookies } from "next/headers";
 
 export default async function Home() {
+  // Leer cookie de sesión del estudiante
+  const cookieStore = await cookies();
+  const studentName = cookieStore.get("student_name")?.value;
+
   const listaQuizzes = await db
     .select()
     .from(quizzes)
@@ -14,21 +19,38 @@ export default async function Home() {
       <h1 style={{ fontSize: "2.2rem", fontWeight: "bold", marginBottom: "0.5rem" }}>
         Quizzes Profe Nacho
       </h1>
-      <a
-        href="/ingresar"
-        style={{
-          display: "inline-block",
-          marginBottom: "1.5rem",
-          padding: "0.6rem 1.2rem",
-          borderRadius: "10px",
-          background: "var(--button-bg)",
-          color: "var(--button-text)",
-          textDecoration: "none",
-          fontWeight: "bold",
-        }}
-      >
-        Ingresar / Registrarse
-      </a>
+
+      {studentName ? (
+        <div
+          style={{
+            marginBottom: "1.5rem",
+            padding: "0.7rem 1.2rem",
+            borderRadius: "10px",
+            background: "var(--card-bg)",
+            border: "1px solid var(--card-border)",
+            display: "inline-block",
+          }}
+        >
+          👋 ¡Hola, {studentName}! Ya estás logueado.
+        </div>
+      ) : (
+        <a
+          href="/ingresar"
+          style={{
+            display: "inline-block",
+            marginBottom: "1.5rem",
+            padding: "0.6rem 1.2rem",
+            borderRadius: "10px",
+            background: "var(--button-bg)",
+            color: "var(--button-text)",
+            textDecoration: "none",
+            fontWeight: "bold",
+          }}
+        >
+          Ingresar / Registrarse
+        </a>
+      )}
+
       <p style={{ color: "var(--text-secondary)", marginBottom: "2rem" }}>
         Elegí un quiz para empezar a jugar.
       </p>
