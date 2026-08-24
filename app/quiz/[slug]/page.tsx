@@ -1,6 +1,7 @@
 import { db } from "../../../lib/db";
 import { quizzes, rounds, questions } from "../../../lib/db/schema";
 import { eq } from "drizzle-orm";
+import { cookies } from "next/headers";
 import QuizGame from "./QuizGame";
 
 export default async function QuizPage({
@@ -10,7 +11,10 @@ export default async function QuizPage({
 }) {
   const { slug } = await params;
 
-  // Buscar el quiz por su slug
+  // Leer cookie de sesión del estudiante
+  const cookieStore = await cookies();
+  const studentName = cookieStore.get("student_name")?.value || null;
+
   const quiz = (await db.select().from(quizzes).where(eq(quizzes.slug, slug)))[0];
 
   if (!quiz) {
@@ -22,10 +26,8 @@ export default async function QuizPage({
     );
   }
 
-  // Buscar las rondas de ese quiz
   const rondas = await db.select().from(rounds).where(eq(rounds.quizId, quiz.id));
 
-  // Buscar todas las preguntas de esas rondas
   const rondasConPreguntas = await Promise.all(
     rondas.map(async (ronda) => {
       const preguntas = await db
@@ -59,6 +61,7 @@ export default async function QuizPage({
     <QuizGame
       quizTitle={quiz.title}
       rondas={rondasConPreguntas}
+      studentName={studentName}
     />
   );
 }
