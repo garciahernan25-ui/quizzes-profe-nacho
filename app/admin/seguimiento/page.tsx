@@ -68,7 +68,7 @@ export default function Seguimiento() {
   }
 
   return (
-    <main style={{ padding: "2rem 1rem", maxWidth: "900px", margin: "0 auto" }}>
+    <main style={{ padding: "1rem", maxWidth: "900px", margin: "0 auto" }}>
       <a href="/admin" style={{ color: "var(--button-bg)", textDecoration: "none" }}>
         ← Volver al panel
       </a>
@@ -99,74 +99,77 @@ export default function Seguimiento() {
                   border: "1px solid var(--card-border)",
                 }}
               >
-                <div style={{ fontWeight: "bold", fontSize: "1.1rem" }}>{nombre}</div>
+                <div style={{ fontWeight: "bold", fontSize: "1.1rem", wordBreak: "break-word" }}>
+                  {nombre}
+                </div>
                 <div style={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}>
                   {delGrupo.length} alumno(s) · promedio del grupo:{" "}
                   <b style={{ color: colorPromedio(promGrupo) }}>{promGrupo}%</b>
                 </div>
               </div>
 
-              <div style={{ overflowX: "auto" }}>
-                <table
-                  style={{
-                    width: "100%",
-                    borderCollapse: "collapse",
-                    minWidth: "550px",
-                  }}
-                >
-                  <thead>
-                    <tr style={{ borderBottom: "2px solid var(--card-border)", textAlign: "left" }}>
-                      <th style={{ padding: "0.6rem" }}>Alumno</th>
-                      <th style={{ padding: "0.6rem" }}>Quizzes jugados</th>
-                      <th style={{ padding: "0.6rem" }}>Promedio</th>
-                      <th style={{ padding: "0.6rem" }}></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {delGrupo
-                      .sort((a, b) => a.fullName.localeCompare(b.fullName))
-                      .map((a) => (
-                        <tr key={a.id} style={{ borderBottom: "1px solid var(--card-border)" }}>
-                          <td
-                            style={{
-                              padding: "0.6rem",
-                              fontWeight: "bold",
-                              wordBreak: "break-word",
-                            }}
-                          >
-                            {a.fullName}
-                          </td>
-                          <td style={{ padding: "0.6rem" }}>{a.cantQuizzes}</td>
-                          <td
-                            style={{
-                              padding: "0.6rem",
-                              fontWeight: "bold",
-                              color: colorPromedio(a.promedio),
-                            }}
-                          >
-                            {a.cantQuizzes > 0 ? `${a.promedio}%` : "—"}
-                          </td>
-                          <td style={{ padding: "0.6rem", textAlign: "right" }}>
-                            <button
-                              onClick={() => borrarAlumno(a.id, a.fullName)}
-                              style={{
-                                padding: "0.3rem 0.7rem",
-                                borderRadius: "6px",
-                                border: "1px solid #ef4444",
-                                background: "var(--card-bg)",
-                                color: "#ef4444",
-                                cursor: "pointer",
-                                fontSize: "0.85rem",
-                                whiteSpace: "nowrap",
-                              }}
-                            >
-                              Eliminar
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
+              <div style={{ display: "grid", gap: "0.8rem" }}>
+                {delGrupo
+                  .sort((a, b) => a.fullName.localeCompare(b.fullName))
+                  .map((a) => (
+                    <div
+                      key={a.id}
+                      style={{
+                        border: "1px solid var(--card-border)",
+                        borderRadius: "10px",
+                        background: "var(--card-bg)",
+                        padding: "0.8rem",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "0.5rem",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          gap: "0.5rem",
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <span style={{ fontWeight: "bold", wordBreak: "break-word" }}>
+                          {a.fullName}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: "0.85rem",
+                            fontWeight: "bold",
+                            color: a.cantQuizzes > 0 ? colorPromedio(a.promedio) : "var(--text-muted)",
+                          }}
+                        >
+                          {a.cantQuizzes > 0 ? `${a.promedio}%` : "—"}
+                        </span>
+                      </div>
+
+                      <div style={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}>
+                        Quizzes jugados: {a.cantQuizzes}
+                      </div>
+
+                      <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                        <button
+                          onClick={() => borrarAlumno(a.id, a.fullName)}
+                          style={{
+                            padding: "0.3rem 0.7rem",
+                            borderRadius: "6px",
+                            border: "1px solid #ef4444",
+                            background: "var(--card-bg)",
+                            color: "#ef4444",
+                            cursor: "pointer",
+                            fontSize: "0.85rem",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          Eliminar
+                        </button>
+                      </div>
+                    </div>
+                  ))}
               </div>
             </div>
           );
