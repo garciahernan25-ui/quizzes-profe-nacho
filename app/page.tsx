@@ -3,6 +3,7 @@ import { quizzes } from "../lib/db/schema";
 import { eq } from "drizzle-orm";
 import Link from "next/link";
 import { cookies } from "next/headers";
+import LogoutButton from "./LogoutButton";
 
 export default async function Home() {
   // Leer cookie de sesión del estudiante
@@ -28,10 +29,14 @@ export default async function Home() {
             borderRadius: "10px",
             background: "var(--card-bg)",
             border: "1px solid var(--card-border)",
-            display: "inline-block",
+            display: "flex",
+            alignItems: "center",
+            gap: "1rem",
+            flexWrap: "wrap",
           }}
         >
-          👋 ¡Hola, {studentName}! Ya estás logueado.
+          <span>👋 ¡Hola, {studentName}!</span>
+          <LogoutButton />
         </div>
       ) : (
         <a
