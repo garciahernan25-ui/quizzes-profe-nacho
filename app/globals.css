@@ -413,6 +413,29 @@ body {
 .textarea { min-height: 96px; resize: vertical; }
 .select { appearance: none; cursor: pointer; }
 
+/* Inputs de archivo: que nunca desborden el contenedor en pantallas chicas.
+   El texto del botón nativo ("Choose File / No file chosen") fuerza un ancho
+   intrínseco grande; lo limitamos para mantener el layout responsive. */
+input[type="file"] {
+  max-width: 100%;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+input[type="file"]::file-selector-button {
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-sm);
+  padding: 0.4rem 0.75rem;
+  margin-right: 0.6rem;
+  cursor: pointer;
+  transition: background 0.18s var(--ease);
+}
+input[type="file"]::file-selector-button:hover { background: var(--surface-hover); }
+
 /* Feedback de mensajes */
 .notice { text-align: center; font-weight: 600; padding: 0.7rem 1rem; border-radius: var(--r-md); }
 .notice-error { color: var(--danger); background: var(--danger-soft); border: 1px solid var(--danger-border); }
