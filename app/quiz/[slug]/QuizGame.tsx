@@ -50,6 +50,10 @@ export default function QuizGame({
   }, [respondida, rondaActiva, indice, terminado]);
 
   function empezarRonda(ronda: Ronda) {
+    if (!ronda.questions || ronda.questions.length === 0) {
+      alert("Esta ronda todavía no tiene preguntas cargadas.");
+      return;
+    }
     setRondaActiva(ronda);
     setIndice(0);
     setPuntaje(0);
@@ -146,12 +150,15 @@ export default function QuizGame({
           </header>
 
           <div className="grid-1" style={{ gap: "1rem" }}>
-            {rondas.map((ronda) => (
+            {rondas.map((ronda) => {
+              const sinPreguntas = !ronda.questions || ronda.questions.length === 0;
+              return (
               <button
                 key={ronda.id}
                 onClick={() => empezarRonda(ronda)}
+                disabled={sinPreguntas}
                 className="card card-link"
-                style={{ textAlign: "left" }}
+                style={{ textAlign: "left", opacity: sinPreguntas ? 0.55 : 1, cursor: sinPreguntas ? "not-allowed" : "pointer" }}
               >
                 <div className="row between" style={{ alignItems: "flex-start" }}>
                   <div>
@@ -162,7 +169,8 @@ export default function QuizGame({
                   <span className="badge">{ronda.questions.length} preguntas</span>
                 </div>
               </button>
-            ))}
+              );
+            })}
           </div>
         </main>
       </>
@@ -200,6 +208,25 @@ export default function QuizGame({
 
   // PANTALLA 2: jugando
   const pregunta = rondaActiva.questions[indice];
+
+  // Guarda defensiva: si por algún motivo no hay pregunta en este índice,
+  // no reventamos el render (evita "This page couldn't load").
+  if (!pregunta) {
+    return (
+      <>
+        <Navbar />
+        <main className="page page-narrow animate-in" style={{ paddingTop: "clamp(2rem, 8vh, 5rem)" }}>
+          <div className="card card-pad-lg stack-md" style={{ textAlign: "center" }}>
+            <h1 className="h2">Esta ronda no tiene preguntas disponibles.</h1>
+            <button onClick={volverInicio} className="btn btn-primary btn-lg" style={{ alignSelf: "center" }}>
+              Volver a elegir ronda
+            </button>
+          </div>
+        </main>
+      </>
+    );
+  }
+
   const progreso = ((indice + (respondida ? 1 : 0)) / rondaActiva.questions.length) * 100;
   return (
     <>
