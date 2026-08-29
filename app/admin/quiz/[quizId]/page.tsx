@@ -49,7 +49,7 @@ export default function PreguntasDelQuiz() {
       <Link href="/admin" className="back-link"><ArrowLeft size={16} /> Volver al panel</Link>
       <div className="row between">
         <h1 className="h1">Preguntas del quiz</h1>
-        <Link href={`/admin/nueva-pregunta?ronda=${quizId}`} className="btn btn-primary">
+        <Link href={`/admin/nueva-pregunta?quiz=${quizId}`} className="btn btn-primary">
           <Plus size={17} /> Agregar pregunta
         </Link>
       </div>
