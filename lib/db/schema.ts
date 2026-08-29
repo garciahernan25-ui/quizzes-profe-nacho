@@ -40,8 +40,8 @@ export const questions = sqliteTable("questions", {
 // Tabla de puntajes
 export const scores = sqliteTable("scores", {
   id: text("id").primaryKey(),
-  quizId: text("quiz_id").references(() => quizzes.id),
-  roundId: text("round_id").references(() => rounds.id),
+  quizId: text("quiz_id").references(() => quizzes.id, { onDelete: "cascade" }),
+  roundId: text("round_id").references(() => rounds.id, { onDelete: "cascade" }),
   playerName: text("player_name"),
   score: integer("score").notNull(),
   totalQuestions: integer("total_questions").notNull(),

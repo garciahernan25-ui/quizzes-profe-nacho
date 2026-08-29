@@ -5,11 +5,12 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Notice } from "../../components/icons";
 
-type Ronda = { id: string; name: string };
+type Ronda = { id: string; name: string; quizId?: string };
 
 function FormularioNuevaPregunta() {
   const searchParams = useSearchParams();
   const rondaFija = searchParams.get("ronda");
+  const quizId = searchParams.get("quiz");
 
   const [rondas, setRondas] = useState<Ronda[]>([]);
   const [roundId, setRoundId] = useState("");
@@ -25,17 +26,22 @@ function FormularioNuevaPregunta() {
   const [guardando, setGuardando] = useState(false);
 
   useEffect(() => {
+    // Caso 1: llega una ronda concreta (?ronda=<id>), la usamos fija.
     if (rondaFija) {
       setRoundId(rondaFija);
-    } else {
-      fetch("/api/rondas")
-        .then((r) => r.json())
-        .then((data) => {
-          setRondas(data);
-          if (data.length > 0) setRoundId(data[0].id);
-        });
+      return;
     }
-  }, [rondaFija]);
+    // Caso 2 y 3: cargamos las rondas. Si llega ?quiz=<id>, mostramos
+    // solo las rondas de ese quiz; si no, todas. Siempre por el selector,
+    // así nunca guardamos un id que no sea una ronda válida.
+    fetch("/api/rondas")
+      .then((r) => r.json())
+      .then((data: Ronda[]) => {
+        const lista = quizId ? data.filter((r) => r.quizId === quizId) : data;
+        setRondas(lista);
+        if (lista.length > 0) setRoundId(lista[0].id);
+      });
+  }, [rondaFija, quizId]);
 
   function cambiarOpcion(i: number, valor: string) {
     const nuevas = [...opciones];
@@ -85,7 +91,11 @@ function FormularioNuevaPregunta() {
   }
 
   async function guardar() {
-    if (!roundId || !pregunta) {
+    if (!roundId) {
+      setMensaje("Este quiz no tiene secciones. Creá una sección antes de agregar preguntas.");
+      return;
+    }
+    if (!pregunta) {
       setMensaje("Completá la pregunta.");
       return;
     }
