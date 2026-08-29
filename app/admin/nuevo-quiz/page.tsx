@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { ArrowLeft, Plus, Check, Notice } from "../../components/icons";
 
 export default function NuevoQuiz() {
   const [title, setTitle] = useState("");
@@ -34,88 +36,61 @@ export default function NuevoQuiz() {
     }
   }
 
-  const label = { display: "block", fontWeight: "bold", margin: "1rem 0 0.3rem" } as const;
-  const input = {
-    width: "100%",
-    padding: "0.6rem",
-    borderRadius: "8px",
-    border: "1px solid var(--card-border)",
-    background: "var(--card-bg)",
-    color: "var(--foreground)",
-    fontSize: "1rem",
-    boxSizing: "border-box",
-  } as const;
+  const exito = mensaje.startsWith("✓");
 
   // Si el quiz ya se creó, mostramos la pantalla de "listo, cargá preguntas"
   if (rondaCreada) {
     return (
-      <main style={{ padding: "2rem 1rem", maxWidth: "600px", margin: "0 auto", textAlign: "center" }}>
-        <h1 style={{ fontSize: "1.8rem", fontWeight: "bold", margin: "1rem 0" }}>✓ ¡Quiz creado!</h1>
-        <p style={{ color: "var(--text-secondary)", marginBottom: "2rem" }}>Ahora podés cargarle preguntas.</p>
-        <a
-          href={`/admin/nueva-pregunta?ronda=${rondaCreada}`}
-          style={{
-            display: "inline-block",
-            padding: "0.9rem 1.5rem",
-            borderRadius: "10px",
-            background: "#16a34a",
-            color: "white",
-            textDecoration: "none",
-            fontWeight: "bold",
-            fontSize: "1.1rem",
-            marginBottom: "1rem",
-          }}
-        >
-          + Agregar preguntas a este quiz
-        </a>
-        <br />
-        <a href="/admin" style={{ color: "var(--button-bg)", textDecoration: "none" }}>← Volver al panel</a>
+      <main className="page page-narrow animate-in" style={{ paddingTop: "clamp(2rem, 8vh, 5rem)" }}>
+        <div className="card card-pad-lg stack-md" style={{ textAlign: "center" }}>
+          <div className="brand-logo" style={{ margin: "0 auto", width: 48, height: 48, background: "linear-gradient(140deg, #23b56a, #2fd27a)", color: "#04120a" }}><Check size={24} /></div>
+          <h1 className="h1">¡Quiz creado!</h1>
+          <p className="lead">Ahora podés cargarle preguntas.</p>
+          <Link href={`/admin/nueva-pregunta?ronda=${rondaCreada}`} className="btn btn-primary btn-lg" style={{ alignSelf: "center" }}>
+            <Plus size={18} /> Agregar preguntas
+          </Link>
+          <Link href="/admin" className="back-link" style={{ alignSelf: "center" }}><ArrowLeft size={16} /> Volver al panel</Link>
+        </div>
       </main>
     );
   }
 
   return (
-    <main style={{ padding: "2rem 1rem", maxWidth: "600px", margin: "0 auto" }}>
-      <a href="/admin" style={{ color: "var(--button-bg)", textDecoration: "none" }}>← Volver al panel</a>
-      <h1 style={{ fontSize: "1.8rem", fontWeight: "bold", margin: "1rem 0" }}>Nuevo quiz</h1>
+    <main className="page page-narrow animate-in" style={{ paddingTop: "clamp(1.5rem, 5vh, 3rem)" }}>
+      <Link href="/admin" className="back-link" style={{ marginBottom: "1.5rem" }}><ArrowLeft size={16} /> Volver al panel</Link>
 
-      <label style={label}>Título del quiz *</label>
-      <input value={title} onChange={(e) => setTitle(e.target.value)} style={input} placeholder="Ej: Tabla periódica" />
+      <div className="card card-pad-lg stack-md">
+        <h1 className="h1">Nuevo quiz</h1>
 
-      <label style={label}>Descripción</label>
-      <input value={description} onChange={(e) => setDescription(e.target.value)} style={input} placeholder="De qué trata" />
+        <div>
+          <div className="field">
+            <label className="label">Título del quiz *</label>
+            <input className="input" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Ej: Tabla periódica" />
+          </div>
+          <div className="field">
+            <label className="label">Descripción</label>
+            <input className="input" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="De qué trata" />
+          </div>
+          <div className="field">
+            <label className="label">Ícono (un emoji)</label>
+            <input className="input" value={icon} onChange={(e) => setIcon(e.target.value)} placeholder="Ej: 🧪" />
+          </div>
+          <div className="field">
+            <label className="label">Materia</label>
+            <input className="input" value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Ej: Química" />
+          </div>
+          <div className="field">
+            <label className="label">Nivel</label>
+            <input className="input" value={level} onChange={(e) => setLevel(e.target.value)} placeholder="Ej: Secundaria" />
+          </div>
+        </div>
 
-      <label style={label}>Ícono (un emoji)</label>
-      <input value={icon} onChange={(e) => setIcon(e.target.value)} style={input} placeholder="Ej: 🧪" />
+        <button onClick={guardar} disabled={guardando} className="btn btn-primary btn-lg btn-block">
+          {guardando ? "Creando..." : "Crear quiz"}
+        </button>
 
-      <label style={label}>Materia</label>
-      <input value={subject} onChange={(e) => setSubject(e.target.value)} style={input} placeholder="Ej: Química" />
-
-      <label style={label}>Nivel</label>
-      <input value={level} onChange={(e) => setLevel(e.target.value)} style={input} placeholder="Ej: Secundaria" />
-
-      <button
-        onClick={guardar}
-        disabled={guardando}
-        style={{
-          marginTop: "1.5rem",
-          width: "100%",
-          padding: "0.9rem",
-          borderRadius: "10px",
-          border: "none",
-          background: "var(--button-bg)",
-          color: "var(--button-text)",
-          fontSize: "1.1rem",
-          fontWeight: "bold",
-          cursor: "pointer",
-        }}
-      >
-        {guardando ? "Creando..." : "Crear quiz"}
-      </button>
-
-      {mensaje && (
-        <p style={{ marginTop: "1rem", textAlign: "center", fontWeight: "bold" }}>{mensaje}</p>
-      )}
+        {mensaje && <Notice message={mensaje} success={exito} />}
+      </div>
     </main>
   );
 }

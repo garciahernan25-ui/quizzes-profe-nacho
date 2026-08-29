@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft, Camera, Notice } from "../../../components/icons";
 
 export default function EditarPregunta() {
   const params = useParams();
@@ -122,167 +124,81 @@ export default function EditarPregunta() {
     }
   }
 
-  const label = { display: "block", fontWeight: "bold", margin: "1rem 0 0.3rem" } as const;
-  const input = {
-    width: "100%",
-    padding: "0.6rem",
-    borderRadius: "8px",
-    border: "1px solid var(--card-border)",
-    background: "var(--card-bg)",
-    color: "var(--foreground)",
-    fontSize: "1rem",
-    boxSizing: "border-box",
-  } as const;
-  const botonImagen = {
-    display: "inline-block",
-    padding: "0.5rem 1rem",
-    borderRadius: "8px",
-    border: "1px solid var(--button-bg)",
-    background: "var(--card-bg)",
-    color: "var(--button-bg)",
-    cursor: "pointer",
-    fontSize: "0.9rem",
-    fontWeight: "bold",
-    marginTop: "0.3rem",
-  } as const;
+  const exito = mensaje.startsWith("✓");
 
   if (cargando) {
-    return <main style={{ padding: "2rem", textAlign: "center" }}>Cargando...</main>;
+    return <main className="page" style={{ textAlign: "center" }}>Cargando...</main>;
   }
 
   return (
-    <main style={{ padding: "2rem 1rem", maxWidth: "600px", margin: "0 auto" }}>
-      <a href="/admin" style={{ color: "var(--button-bg)", textDecoration: "none" }}>← Volver al panel</a>
-      <h1 style={{ fontSize: "1.8rem", fontWeight: "bold", margin: "1rem 0" }}>Editar pregunta</h1>
+    <main className="page page-narrow animate-in" style={{ paddingTop: "clamp(1.5rem, 5vh, 3rem)" }}>
+      <Link href="/admin" className="back-link" style={{ marginBottom: "1.5rem" }}><ArrowLeft size={16} /> Volver al panel</Link>
 
-      <label style={label}>Pregunta</label>
-      <input value={pregunta} onChange={(e) => setPregunta(e.target.value)} style={input} />
+      <div className="card card-pad-lg stack-md">
+        <h1 className="h1">Editar pregunta</h1>
 
-      {/* Imagen de la pregunta */}
-      <label style={label}>Imagen de la pregunta</label>
-      <input
-        ref={inputPreguntaRef}
-        type="file"
-        accept="image/*"
-        style={{ display: "none" }}
-        onChange={subirImagenPregunta}
-      />
-      <button
-        type="button"
-        style={botonImagen}
-        onClick={() => inputPreguntaRef.current?.click()}
-        disabled={subiendo}
-      >
-        {subiendo ? "Subiendo..." : "📷 Subir imagen"}
-      </button>
-      {questionImage && (
-        <div style={{ marginTop: "0.5rem" }}>
-          <img src={questionImage} alt="" style={{ maxWidth: "100%", borderRadius: "8px", border: "1px solid var(--card-border)" }} />
-          <button
-            onClick={quitarImagenPregunta}
-            style={{
-              display: "block",
-              marginTop: "0.3rem",
-              padding: "0.3rem 0.7rem",
-              borderRadius: "6px",
-              border: "1px solid #ef4444",
-              background: "var(--card-bg)",
-              color: "#ef4444",
-              cursor: "pointer",
-              fontSize: "0.85rem",
-            }}
-          >
-            Quitar imagen
+        <div className="field">
+          <label className="label">Pregunta</label>
+          <input className="input" value={pregunta} onChange={(e) => setPregunta(e.target.value)} />
+        </div>
+
+        {/* Imagen de la pregunta */}
+        <div className="field">
+          <label className="label">Imagen de la pregunta</label>
+          <input ref={inputPreguntaRef} type="file" accept="image/*" style={{ display: "none" }} onChange={subirImagenPregunta} />
+          <button type="button" className="btn btn-ghost btn-sm" style={{ alignSelf: "flex-start" }} onClick={() => inputPreguntaRef.current?.click()} disabled={subiendo}>
+            {subiendo ? "Subiendo..." : <><Camera size={15} /> Subir imagen</>}
           </button>
+          {questionImage && (
+            <div className="stack-sm" style={{ marginTop: "0.5rem" }}>
+              <img src={questionImage} alt="" style={{ borderRadius: "var(--r-md)", border: "1px solid var(--border)" }} />
+              <button onClick={quitarImagenPregunta} className="btn btn-danger btn-sm" style={{ alignSelf: "flex-start" }}>Quitar imagen</button>
+            </div>
+          )}
         </div>
-      )}
 
-      <label style={label}>Opciones (marcá la correcta)</label>
-      {opciones.map((op, i) => (
-        <div key={i} style={{ marginBottom: "0.8rem", border: "1px solid var(--card-border)", borderRadius: "10px", padding: "0.8rem" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-            <input
-              type="radio"
-              name="correcta"
-              checked={correcta === i}
-              onChange={() => setCorrecta(i)}
-            />
-            <input
-              value={op}
-              onChange={(e) => cambiarOpcion(i, e.target.value)}
-              style={{ ...input, flex: 1 }}
-            />
-          </div>
-
-          {/* Imagen de la opción */}
-          <div style={{ marginTop: "0.5rem", paddingLeft: "1.5rem" }}>
-            <input
-              ref={(el) => {
-                inputOpcionRefs.current[i] = el;
-              }}
-              type="file"
-              accept="image/*"
-              style={{ display: "none" }}
-              onChange={(e) => subirImagenOpcion(i, e)}
-            />
-            <button
-              type="button"
-              style={botonImagen}
-              onClick={() => inputOpcionRefs.current[i]?.click()}
-              disabled={subiendoOp === i}
-            >
-              {subiendoOp === i ? "Subiendo..." : "📷 Subir imagen"}
-            </button>
-            {optionImages[i] && (
-              <div style={{ marginTop: "0.4rem" }}>
-                <img src={optionImages[i]} alt="" style={{ maxWidth: "120px", borderRadius: "6px", border: "1px solid var(--card-border)" }} />
-                <button
-                  onClick={() => quitarImagenOpcion(i)}
-                  style={{
-                    display: "block",
-                    marginTop: "0.3rem",
-                    padding: "0.2rem 0.6rem",
-                    borderRadius: "6px",
-                    border: "1px solid #ef4444",
-                    background: "var(--card-bg)",
-                    color: "#ef4444",
-                    cursor: "pointer",
-                    fontSize: "0.8rem",
-                  }}
-                >
-                  Quitar
-                </button>
+        <div className="stack-sm">
+          <label className="label">Opciones (marcá la correcta)</label>
+          {opciones.map((op, i) => (
+            <div key={i} className="card" style={{ background: "var(--bg-subtle)", padding: "0.9rem" }}>
+              <div className="row" style={{ gap: "0.6rem", flexWrap: "nowrap" }}>
+                <input type="radio" name="correcta" checked={correcta === i} onChange={() => setCorrecta(i)} style={{ accentColor: "var(--brand)", width: 18, height: 18 }} />
+                <input className="input" value={op} onChange={(e) => cambiarOpcion(i, e.target.value)} />
               </div>
-            )}
-          </div>
+
+              <div style={{ marginTop: "0.6rem", paddingLeft: "1.8rem" }}>
+                <input
+                  ref={(el) => { inputOpcionRefs.current[i] = el; }}
+                  type="file"
+                  accept="image/*"
+                  style={{ display: "none" }}
+                  onChange={(e) => subirImagenOpcion(i, e)}
+                />
+                <button type="button" className="btn btn-ghost btn-sm" onClick={() => inputOpcionRefs.current[i]?.click()} disabled={subiendoOp === i}>
+                  {subiendoOp === i ? "Subiendo..." : <><Camera size={15} /> Subir imagen</>}
+                </button>
+                {optionImages[i] && (
+                  <div className="stack-sm" style={{ marginTop: "0.4rem" }}>
+                    <img src={optionImages[i]!} alt="" style={{ maxWidth: "120px", borderRadius: "var(--r-sm)", border: "1px solid var(--border)" }} />
+                    <button onClick={() => quitarImagenOpcion(i)} className="btn btn-danger btn-sm" style={{ alignSelf: "flex-start" }}>Quitar</button>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
-      ))}
 
-      <label style={label}>Explicación</label>
-      <textarea value={explicacion} onChange={(e) => setExplicacion(e.target.value)} style={{ ...input, minHeight: "70px" }} />
+        <div className="field" style={{ marginBottom: 0 }}>
+          <label className="label">Explicación</label>
+          <textarea className="textarea" value={explicacion} onChange={(e) => setExplicacion(e.target.value)} />
+        </div>
 
-      <button
-        onClick={guardar}
-        disabled={guardando}
-        style={{
-          marginTop: "1.5rem",
-          width: "100%",
-          padding: "0.9rem",
-          borderRadius: "10px",
-          border: "none",
-          background: "var(--button-bg)",
-          color: "var(--button-text)",
-          fontSize: "1.1rem",
-          fontWeight: "bold",
-          cursor: "pointer",
-        }}
-      >
-        {guardando ? "Guardando..." : "Guardar cambios"}
-      </button>
+        <button onClick={guardar} disabled={guardando} className="btn btn-primary btn-lg btn-block">
+          {guardando ? "Guardando..." : "Guardar cambios"}
+        </button>
 
-      {mensaje && (
-        <p style={{ marginTop: "1rem", textAlign: "center", fontWeight: "bold" }}>{mensaje}</p>
-      )}
+        {mensaje && <Notice message={mensaje} success={exito} />}
+      </div>
     </main>
   );
 }

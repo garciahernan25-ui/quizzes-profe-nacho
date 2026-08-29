@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Navbar from "../../components/Navbar";
+import { Sparkle } from "../../components/icons";
 
 export default function LoginAdmin() {
   const [password, setPassword] = useState("");
@@ -24,28 +26,37 @@ export default function LoginAdmin() {
   }
 
   return (
-    <main style={{ padding: "3rem", maxWidth: "400px", margin: "0 auto", textAlign: "center" }}>
-      <h1 style={{ fontSize: "1.8rem", fontWeight: "bold", marginBottom: "0.5rem" }}>Panel de administración</h1>
-      <p style={{ color: "#555", marginBottom: "2rem" }}>Ingresá tu contraseña para continuar.</p>
+    <>
+      <Navbar back={{ href: "/", label: "Volver al inicio" }} />
+      <main className="page page-narrow animate-in" style={{ paddingTop: "clamp(2rem, 10vh, 6rem)" }}>
+      <div className="card card-pad-lg stack-md">
+        <header className="stack-sm" style={{ textAlign: "center" }}>
+          <div className="brand-logo" style={{ margin: "0 auto 0.5rem", width: 44, height: 44 }}>
+            <Sparkle size={22} />
+          </div>
+          <h1 className="h1">Panel de administración</h1>
+          <p className="lead">Ingresá tu contraseña para continuar.</p>
+        </header>
 
-      <input
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        onKeyDown={(e) => { if (e.key === "Enter") entrar(); }}
-        placeholder="Contraseña"
-        style={{ width: "100%", padding: "0.8rem", borderRadius: "8px", border: "1px solid #ccc", fontSize: "1rem", marginBottom: "1rem" }}
-      />
+        <div className="field" style={{ marginBottom: 0 }}>
+          <label className="label">Contraseña</label>
+          <input
+            className="input"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") entrar(); }}
+            placeholder="Contraseña"
+          />
+        </div>
 
-      <button
-        onClick={entrar}
-        disabled={entrando}
-        style={{ width: "100%", padding: "0.9rem", borderRadius: "10px", border: "none", background: "#2563eb", color: "white", fontSize: "1.1rem", fontWeight: "bold", cursor: "pointer" }}
-      >
-        {entrando ? "Entrando..." : "Entrar"}
-      </button>
+        <button onClick={entrar} disabled={entrando} className="btn btn-primary btn-lg btn-block">
+          {entrando ? "Entrando..." : "Entrar"}
+        </button>
 
-      {error && <p style={{ marginTop: "1rem", color: "#ef4444", fontWeight: "bold" }}>{error}</p>}
-    </main>
+        {error && <p className="notice notice-error">{error}</p>}
+      </div>
+      </main>
+    </>
   );
 }

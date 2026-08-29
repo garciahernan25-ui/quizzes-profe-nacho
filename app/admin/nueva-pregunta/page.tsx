@@ -2,6 +2,8 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft, Notice } from "../../components/icons";
 
 type Ronda = { id: string; name: string };
 
@@ -123,77 +125,85 @@ function FormularioNuevaPregunta() {
     }
   }
 
-  const label = { display: "block", fontWeight: "bold", margin: "1rem 0 0.3rem" } as const;
-  const input = { width: "100%", padding: "0.6rem", borderRadius: "8px", border: "1px solid #ccc", fontSize: "1rem" } as const;
+  const exito = mensaje.startsWith("✓");
 
   return (
-    <main style={{ padding: "3rem", maxWidth: "600px", margin: "0 auto" }}>
-      <a href="/admin" style={{ color: "#2563eb", textDecoration: "none" }}>← Volver al panel</a>
-      <h1 style={{ fontSize: "1.8rem", fontWeight: "bold", margin: "1rem 0" }}>Nueva pregunta</h1>
+    <main className="page page-narrow animate-in" style={{ paddingTop: "clamp(1.5rem, 5vh, 3rem)" }}>
+      <Link href="/admin" className="back-link" style={{ marginBottom: "1.5rem" }}><ArrowLeft size={16} /> Volver al panel</Link>
 
-      {!rondaFija && (
-        <>
-          <label style={label}>Ronda</label>
-          <select value={roundId} onChange={(e) => setRoundId(e.target.value)} style={input}>
-            {rondas.map((r) => (
-              <option key={r.id} value={r.id}>{r.name}</option>
-            ))}
-          </select>
-        </>
-      )}
+      <div className="card card-pad-lg stack-md">
+        <h1 className="h1">Nueva pregunta</h1>
 
-      <label style={label}>Pregunta</label>
-      <input value={pregunta} onChange={(e) => setPregunta(e.target.value)} style={input} placeholder="Escribí la pregunta" />
+        <div>
+          {!rondaFija && (
+            <div className="field">
+              <label className="label">Ronda</label>
+              <select className="select" value={roundId} onChange={(e) => setRoundId(e.target.value)}>
+                {rondas.map((r) => (
+                  <option key={r.id} value={r.id}>{r.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
 
-      <label style={label}>Imagen de la pregunta (opcional)</label>
-      <input type="file" accept="image/*" onChange={subirImagenPregunta} />
-      {subiendo && <p style={{ color: "#888", marginTop: "0.5rem" }}>Subiendo imagen...</p>}
-      {imagenUrl && (
-        <div style={{ marginTop: "0.8rem" }}>
-          <img src={imagenUrl} alt="" style={{ maxWidth: "100%", borderRadius: "8px", border: "1px solid #ddd" }} />
-          <button onClick={() => setImagenUrl("")} style={{ display: "block", marginTop: "0.5rem", padding: "0.3rem 0.7rem", borderRadius: "6px", border: "1px solid #ef4444", background: "white", color: "#ef4444", cursor: "pointer", fontSize: "0.85rem" }}>
-            Quitar imagen
-          </button>
-        </div>
-      )}
-
-      <label style={label}>Opciones (marcá la correcta) — cada una puede ser texto y/o imagen</label>
-      {opciones.map((op, i) => (
-        <div key={i} style={{ border: "1px solid #eee", borderRadius: "10px", padding: "0.8rem", marginBottom: "0.8rem" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-            <input type="radio" name="correcta" checked={correcta === i} onChange={() => setCorrecta(i)} />
-            <input value={op} onChange={(e) => cambiarOpcion(i, e.target.value)} style={{ ...input, flex: 1 }} placeholder={`Opción ${i + 1} (texto)`} />
+          <div className="field">
+            <label className="label">Pregunta</label>
+            <input className="input" value={pregunta} onChange={(e) => setPregunta(e.target.value)} placeholder="Escribí la pregunta" />
           </div>
-          <div style={{ marginTop: "0.5rem", paddingLeft: "1.5rem" }}>
-            <input type="file" accept="image/*" onChange={(e) => subirImagenOpcion(i, e)} />
-            {subiendoOp === i && <span style={{ color: "#888", fontSize: "0.85rem" }}> subiendo...</span>}
-            {opcionesImg[i] && (
-              <div style={{ marginTop: "0.4rem" }}>
-                <img src={opcionesImg[i]} alt="" style={{ maxWidth: "120px", borderRadius: "6px", border: "1px solid #ddd" }} />
-                <button onClick={() => quitarImagenOpcion(i)} style={{ display: "block", marginTop: "0.3rem", padding: "0.2rem 0.6rem", borderRadius: "6px", border: "1px solid #ef4444", background: "white", color: "#ef4444", cursor: "pointer", fontSize: "0.8rem" }}>
-                  Quitar
-                </button>
+
+          <div className="field">
+            <label className="label">Imagen de la pregunta (opcional)</label>
+            <input className="input" type="file" accept="image/*" onChange={subirImagenPregunta} />
+            {subiendo && <p className="muted">Subiendo imagen...</p>}
+            {imagenUrl && (
+              <div className="stack-sm" style={{ marginTop: "0.5rem" }}>
+                <img src={imagenUrl} alt="" style={{ borderRadius: "var(--r-md)", border: "1px solid var(--border)" }} />
+                <button onClick={() => setImagenUrl("")} className="btn btn-danger btn-sm" style={{ alignSelf: "flex-start" }}>Quitar imagen</button>
               </div>
             )}
           </div>
         </div>
-      ))}
 
-      <label style={label}>Explicación (opcional)</label>
-      <textarea value={explicacion} onChange={(e) => setExplicacion(e.target.value)} style={{ ...input, minHeight: "70px" }} placeholder="Por qué es correcta" />
+        <div className="stack-sm">
+          <label className="label">Opciones (marcá la correcta) — texto y/o imagen</label>
+          {opciones.map((op, i) => (
+            <div key={i} className="card" style={{ background: "var(--bg-subtle)", padding: "0.9rem" }}>
+              <div className="row" style={{ gap: "0.6rem", flexWrap: "nowrap" }}>
+                <input type="radio" name="correcta" checked={correcta === i} onChange={() => setCorrecta(i)} style={{ accentColor: "var(--brand)", width: 18, height: 18 }} />
+                <input className="input" value={op} onChange={(e) => cambiarOpcion(i, e.target.value)} placeholder={`Opción ${i + 1}`} />
+              </div>
+              <div style={{ marginTop: "0.6rem", paddingLeft: "1.8rem" }}>
+                <input type="file" accept="image/*" onChange={(e) => subirImagenOpcion(i, e)} />
+                {subiendoOp === i && <span className="muted"> subiendo...</span>}
+                {opcionesImg[i] && (
+                  <div className="stack-sm" style={{ marginTop: "0.4rem" }}>
+                    <img src={opcionesImg[i]} alt="" style={{ maxWidth: "120px", borderRadius: "var(--r-sm)", border: "1px solid var(--border)" }} />
+                    <button onClick={() => quitarImagenOpcion(i)} className="btn btn-danger btn-sm" style={{ alignSelf: "flex-start" }}>Quitar</button>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
 
-      <button onClick={guardar} disabled={guardando} style={{ marginTop: "1.5rem", width: "100%", padding: "0.9rem", borderRadius: "10px", border: "none", background: "#2563eb", color: "white", fontSize: "1.1rem", fontWeight: "bold", cursor: "pointer" }}>
-        {guardando ? "Guardando..." : "Guardar pregunta"}
-      </button>
+        <div className="field" style={{ marginBottom: 0 }}>
+          <label className="label">Explicación (opcional)</label>
+          <textarea className="textarea" value={explicacion} onChange={(e) => setExplicacion(e.target.value)} placeholder="Por qué es correcta" />
+        </div>
 
-      {mensaje && <p style={{ marginTop: "1rem", textAlign: "center", fontWeight: "bold" }}>{mensaje}</p>}
+        <button onClick={guardar} disabled={guardando} className="btn btn-primary btn-lg btn-block">
+          {guardando ? "Guardando..." : "Guardar pregunta"}
+        </button>
+
+        {mensaje && <Notice message={mensaje} success={exito} />}
+      </div>
     </main>
   );
 }
 
 export default function NuevaPregunta() {
   return (
-    <Suspense fallback={<div style={{ padding: "2rem", textAlign: "center" }}>Cargando...</div>}>
+    <Suspense fallback={<div className="page" style={{ textAlign: "center" }}>Cargando...</div>}>
       <FormularioNuevaPregunta />
     </Suspense>
   );
