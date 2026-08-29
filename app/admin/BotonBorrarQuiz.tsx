@@ -24,15 +24,7 @@ export default function BotonBorrarQuiz({ quizId, titulo }: { quizId: string; ti
   }
 
   return (
-    <button
-      onClick={borrar}
-      disabled={borrando}
-      style={{
-        padding: "0.4rem 0.8rem", borderRadius: "8px", border: "1px solid #ef4444",
-        background: "white", color: "#ef4444", cursor: "pointer",
-        fontSize: "0.85rem", whiteSpace: "nowrap",
-      }}
-    >
+    <button onClick={borrar} disabled={borrando} className="btn btn-danger btn-sm">
       {borrando ? "Borrando..." : "Borrar"}
     </button>
   );

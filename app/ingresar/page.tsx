@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import Navbar from "../components/Navbar";
 
 export default function Ingresar() {
   const [username, setUsername] = useState("");
@@ -28,77 +30,56 @@ export default function Ingresar() {
     }
   }
 
-  const input = {
-    width: "100%",
-    padding: "0.8rem",
-    borderRadius: "8px",
-    border: "1px solid var(--card-border)",
-    background: "var(--card-bg)",
-    color: "var(--foreground)",
-    fontSize: "1rem",
-    marginBottom: "1rem",
-    boxSizing: "border-box",
-  } as const;
-
   return (
-    <main style={{ padding: "3rem", maxWidth: "400px", margin: "0 auto", textAlign: "center" }}>
-      <a
-        href="/"
-        style={{
-          color: "var(--button-bg)",
-          textDecoration: "none",
-          display: "block",
-          textAlign: "left",
-          marginBottom: "1rem",
-        }}
-      >
-        ← Volver
-      </a>
-      <h1 style={{ fontSize: "1.8rem", fontWeight: "bold", marginBottom: "0.5rem" }}>Iniciar sesión</h1>
-      <p style={{ color: "var(--text-secondary)", marginBottom: "2rem" }}>
-        Ingresá para que se guarden tus resultados.
-      </p>
-
-      <input
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-        placeholder="Usuario"
-        style={input}
+    <>
+      <Navbar
+        back={{ href: "/", label: "Volver" }}
+        right={<Link href="/registro" className="btn btn-ghost btn-sm">Crear cuenta</Link>}
       />
-      <input
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") entrar();
-        }}
-        placeholder="Contraseña"
-        style={input}
-      />
+      <main className="page page-narrow animate-in" style={{ paddingTop: "clamp(2rem, 8vh, 5rem)" }}>
+      <div className="card card-pad-lg stack-md">
+        <header className="stack-sm">
+          <h1 className="h1">Iniciar sesión</h1>
+          <p className="lead">Ingresá para que se guarden tus resultados.</p>
+        </header>
 
-      <button
-        onClick={entrar}
-        disabled={entrando}
-        style={{
-          width: "100%",
-          padding: "0.9rem",
-          borderRadius: "10px",
-          border: "none",
-          background: "var(--button-bg)",
-          color: "var(--button-text)",
-          fontSize: "1.1rem",
-          fontWeight: "bold",
-          cursor: "pointer",
-        }}
-      >
-        {entrando ? "Entrando..." : "Entrar"}
-      </button>
+        <div>
+          <div className="field">
+            <label className="label">Usuario</label>
+            <input
+              className="input"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Tu usuario"
+            />
+          </div>
+          <div className="field">
+            <label className="label">Contraseña</label>
+            <input
+              className="input"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") entrar(); }}
+              placeholder="Tu contraseña"
+            />
+          </div>
+        </div>
 
-      {error && <p style={{ marginTop: "1rem", color: "#ef4444", fontWeight: "bold" }}>{error}</p>}
+        <button onClick={entrar} disabled={entrando} className="btn btn-primary btn-lg btn-block">
+          {entrando ? "Entrando..." : "Entrar"}
+        </button>
 
-      <p style={{ marginTop: "1.5rem", color: "var(--text-secondary)" }}>
-        ¿No tenés cuenta? <a href="/registro" style={{ color: "var(--button-bg)" }}>Registrate acá</a>
-      </p>
-    </main>
+        {error && <p className="notice notice-error">{error}</p>}
+
+        <p className="muted" style={{ textAlign: "center" }}>
+          ¿No tenés cuenta?{" "}
+          <Link href="/registro" style={{ color: "var(--brand-hover)", fontWeight: 600 }}>
+            Registrate acá
+          </Link>
+        </p>
+      </div>
+      </main>
+    </>
   );
 }

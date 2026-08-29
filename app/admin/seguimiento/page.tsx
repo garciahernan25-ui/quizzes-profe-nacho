@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
+import { ArrowLeft } from "../../components/icons";
 
 type Alumno = {
   id: string;
@@ -62,118 +64,63 @@ export default function Seguimiento() {
   const nombresGrupos = Object.keys(grupos).sort();
 
   function colorNota(nota: number) {
-    if (nota >= 7) return "#16a34a";
-    if (nota >= 5) return "#f59e0b";
-    return "#ef4444";
+    if (nota >= 7) return "var(--success)";
+    if (nota >= 5) return "var(--warning)";
+    return "var(--danger)";
   }
 
   return (
-    <main style={{ padding: "1rem", maxWidth: "900px", margin: "0 auto" }}>
-      <a href="/admin" style={{ color: "var(--button-bg)", textDecoration: "none" }}>
-        ← Volver al panel
-      </a>
-      <h1 style={{ fontSize: "1.8rem", fontWeight: "bold", margin: "1rem 0" }}>
-        Seguimiento de alumnos
-      </h1>
+    <main className="page page-mid stack-lg animate-in" style={{ paddingTop: "clamp(1.5rem, 5vh, 3rem)" }}>
+      <Link href="/admin" className="back-link"><ArrowLeft size={16} /> Volver al panel</Link>
+      <h1 className="h1">Seguimiento de alumnos</h1>
 
       {cargando ? (
-        <p>Cargando...</p>
+        <p className="lead">Cargando...</p>
       ) : alumnos.length === 0 ? (
-        <p style={{ color: "var(--text-secondary)" }}>
-          Todavía no hay alumnos registrados.
-        </p>
+        <div className="card" style={{ textAlign: "center" }}>
+          <p className="lead">Todavía no hay alumnos registrados.</p>
+        </div>
       ) : (
-        nombresGrupos.map((nombre) => {
-          const delGrupo = grupos[nombre];
-          const promGrupo = Math.round(
-            delGrupo.reduce((acc, a) => acc + a.promedio, 0) / delGrupo.length * 10
-          ) / 10;
-          return (
-            <div key={nombre} style={{ marginBottom: "2.5rem" }}>
-              <div
-                style={{
-                  background: "var(--card-bg)",
-                  padding: "0.8rem 1rem",
-                  borderRadius: "10px",
-                  marginBottom: "0.8rem",
-                  border: "1px solid var(--card-border)",
-                }}
-              >
-                <div style={{ fontWeight: "bold", fontSize: "1.1rem", wordBreak: "break-word" }}>
-                  {nombre}
+        <div className="stack-lg">
+          {nombresGrupos.map((nombre) => {
+            const delGrupo = grupos[nombre];
+            const promGrupo = Math.round(
+              delGrupo.reduce((acc, a) => acc + a.promedio, 0) / delGrupo.length * 10
+            ) / 10;
+            return (
+              <div key={nombre} className="stack-sm">
+                <div className="card" style={{ padding: "0.9rem 1.1rem" }}>
+                  <div style={{ fontWeight: 650, fontSize: "1.05rem", wordBreak: "break-word" }}>{nombre}</div>
+                  <div className="muted">
+                    {delGrupo.length} alumno(s) · promedio del grupo:{" "}
+                    <b style={{ color: colorNota(promGrupo) }}>{promGrupo.toFixed(1)}</b>
+                  </div>
                 </div>
-                <div style={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}>
-                  {delGrupo.length} alumno(s) · nota promedio del grupo:{" "}
-                  <b style={{ color: colorNota(promGrupo) }}>{promGrupo.toFixed(1)}</b>
+
+                <div className="grid-1">
+                  {delGrupo
+                    .sort((a, b) => a.fullName.localeCompare(b.fullName))
+                    .map((a) => (
+                      <div key={a.id} className="card row between" style={{ padding: "0.9rem 1.1rem" }}>
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontWeight: 600, wordBreak: "break-word" }}>{a.fullName}</div>
+                          <div className="muted">Quizzes jugados: {a.cantQuizzes}</div>
+                        </div>
+                        <div className="row" style={{ gap: "0.75rem", flexShrink: 0 }}>
+                          <span style={{ fontWeight: 700, color: a.cantQuizzes > 0 ? colorNota(a.promedio) : "var(--text-muted)" }}>
+                            {a.cantQuizzes > 0 ? `${a.promedio.toFixed(1)} / 10` : "—"}
+                          </span>
+                          <button onClick={() => borrarAlumno(a.id, a.fullName)} className="btn btn-danger btn-sm">
+                            Eliminar
+                          </button>
+                        </div>
+                      </div>
+                    ))}
                 </div>
               </div>
-
-              <div style={{ display: "grid", gap: "0.8rem" }}>
-                {delGrupo
-                  .sort((a, b) => a.fullName.localeCompare(b.fullName))
-                  .map((a) => (
-                    <div
-                      key={a.id}
-                      style={{
-                        border: "1px solid var(--card-border)",
-                        borderRadius: "10px",
-                        background: "var(--card-bg)",
-                        padding: "0.8rem",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "0.5rem",
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          gap: "0.5rem",
-                          flexWrap: "wrap",
-                        }}
-                      >
-                        <span style={{ fontWeight: "bold", wordBreak: "break-word" }}>
-                          {a.fullName}
-                        </span>
-                        <span
-                          style={{
-                            fontSize: "0.85rem",
-                            fontWeight: "bold",
-                            color: a.cantQuizzes > 0 ? colorNota(a.promedio) : "var(--text-muted)",
-                          }}
-                        >
-                          {a.cantQuizzes > 0 ? `${a.promedio.toFixed(1)} / 10` : "—"}
-                        </span>
-                      </div>
-
-                      <div style={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}>
-                        Quizzes jugados: {a.cantQuizzes}
-                      </div>
-
-                      <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                        <button
-                          onClick={() => borrarAlumno(a.id, a.fullName)}
-                          style={{
-                            padding: "0.3rem 0.7rem",
-                            borderRadius: "6px",
-                            border: "1px solid #ef4444",
-                            background: "var(--card-bg)",
-                            color: "#ef4444",
-                            cursor: "pointer",
-                            fontSize: "0.85rem",
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          Eliminar
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </div>
-          );
-        })
+            );
+          })}
+        </div>
       )}
     </main>
   );

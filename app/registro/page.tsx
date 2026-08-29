@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import Navbar from "../components/Navbar";
+import { Notice } from "../components/icons";
 
 const MODALIDADES = ["Secundaria", "Secundaria Técnica", "EPS", "Adulto CENS", "FinES", "Terciario"];
 const ANIOS = ["1ro", "2do", "3ro", "4to", "5to", "6to", "7mo"];
@@ -62,84 +65,85 @@ export default function Registro() {
     }
   }
 
-  const label = { display: "block", fontWeight: "bold", margin: "1rem 0 0.3rem" } as const;
-  const input = {
-    width: "100%",
-    padding: "0.6rem",
-    borderRadius: "8px",
-    border: "1px solid var(--card-border)",
-    background: "var(--card-bg)",
-    color: "var(--foreground)",
-    fontSize: "1rem",
-    boxSizing: "border-box",
-  } as const;
+  const exito = mensaje.startsWith("✓");
 
   return (
-    <main style={{ padding: "3rem", maxWidth: "500px", margin: "0 auto" }}>
-      <a href="/" style={{ color: "var(--button-bg)", textDecoration: "none" }}>← Volver</a>
-      <h1 style={{ fontSize: "1.8rem", fontWeight: "bold", margin: "1rem 0" }}>Crear cuenta de estudiante</h1>
+    <>
+      <Navbar
+        back={{ href: "/", label: "Volver" }}
+        right={<Link href="/ingresar" className="btn btn-ghost btn-sm">Iniciar sesión</Link>}
+      />
+      <main className="page page-narrow animate-in" style={{ paddingTop: "clamp(1.5rem, 5vh, 3rem)" }}>
+      <div className="card card-pad-lg stack-md">
+        <header className="stack-sm">
+          <h1 className="h1">Crear cuenta</h1>
+          <p className="lead">Registrate para guardar tu progreso.</p>
+        </header>
 
-      <label style={label}>Nombre y apellido</label>
-      <input value={fullName} onChange={(e) => setFullName(e.target.value)} style={input} placeholder="Ej: Juan Pérez" />
+        <div>
+          <div className="field">
+            <label className="label">Nombre y apellido</label>
+            <input className="input" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Ej: Juan Pérez" />
+          </div>
 
-      <label style={label}>Usuario (para entrar)</label>
-      <input value={username} onChange={(e) => setUsername(e.target.value)} style={input} placeholder="Ej: juanperez23" />
+          <div className="field">
+            <label className="label">Usuario (para entrar)</label>
+            <input className="input" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Ej: juanperez23" />
+          </div>
 
-      <label style={label}>Contraseña</label>
-      <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} style={input} />
+          <div className="field">
+            <label className="label">Contraseña</label>
+            <input className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          </div>
 
-      <label style={label}>Modalidad</label>
-      <select value={modality} onChange={(e) => setModality(e.target.value)} style={input}>
-        <option value="">Elegí una...</option>
-        {MODALIDADES.map((m) => <option key={m} value={m}>{m}</option>)}
-      </select>
+          <div className="field">
+            <label className="label">Modalidad</label>
+            <select className="select" value={modality} onChange={(e) => setModality(e.target.value)}>
+              <option value="">Elegí una...</option>
+              {MODALIDADES.map((m) => <option key={m} value={m}>{m}</option>)}
+            </select>
+          </div>
 
-      <label style={label}>Escuela</label>
-      <input value={school} onChange={(e) => setSchool(e.target.value)} style={input} placeholder="Nombre de la escuela" />
+          <div className="field">
+            <label className="label">Escuela</label>
+            <input className="input" value={school} onChange={(e) => setSchool(e.target.value)} placeholder="Nombre de la escuela" />
+          </div>
 
-      {usaAnio && (
-        <>
-          <label style={label}>Año</label>
-          <select value={year} onChange={(e) => setYear(e.target.value)} style={input}>
-            <option value="">Elegí...</option>
-            {ANIOS.map((a) => <option key={a} value={a}>{a}</option>)}
-          </select>
+          {usaAnio && (
+            <>
+              <div className="field">
+                <label className="label">Año</label>
+                <select className="select" value={year} onChange={(e) => setYear(e.target.value)}>
+                  <option value="">Elegí...</option>
+                  {ANIOS.map((a) => <option key={a} value={a}>{a}</option>)}
+                </select>
+              </div>
 
-          <label style={label}>División</label>
-          <select value={division} onChange={(e) => setDivision(e.target.value)} style={input}>
-            <option value="">Elegí...</option>
-            {DIVISIONES.map((d) => <option key={d} value={d}>{d}</option>)}
-          </select>
-        </>
-      )}
+              <div className="field">
+                <label className="label">División</label>
+                <select className="select" value={division} onChange={(e) => setDivision(e.target.value)}>
+                  <option value="">Elegí...</option>
+                  {DIVISIONES.map((d) => <option key={d} value={d}>{d}</option>)}
+                </select>
+              </div>
+            </>
+          )}
 
-      {usaExtra && (
-        <>
-          <label style={label}>¿Cuál {modality} es?</label>
-          <input value={extraInfo} onChange={(e) => setExtraInfo(e.target.value)} style={input} placeholder={`Nombre o número de ${modality}`} />
-        </>
-      )}
+          {usaExtra && (
+            <div className="field">
+              <label className="label">¿Cuál {modality} es?</label>
+              <input className="input" value={extraInfo} onChange={(e) => setExtraInfo(e.target.value)} placeholder={`Nombre o número de ${modality}`} />
+            </div>
+          )}
+        </div>
 
-      <button
-        onClick={registrar}
-        disabled={guardando}
-        style={{
-          marginTop: "1.5rem",
-          width: "100%",
-          padding: "0.9rem",
-          borderRadius: "10px",
-          border: "none",
-          background: "#16a34a",
-          color: "white",
-          fontSize: "1.1rem",
-          fontWeight: "bold",
-          cursor: "pointer",
-        }}
-      >
-        {guardando ? "Creando..." : "Crear cuenta"}
-      </button>
+        <button onClick={registrar} disabled={guardando} className="btn btn-primary btn-lg btn-block">
+          {guardando ? "Creando..." : "Crear cuenta"}
+        </button>
 
-      {mensaje && <p style={{ marginTop: "1rem", textAlign: "center", fontWeight: "bold" }}>{mensaje}</p>}
-    </main>
+        {mensaje && <Notice message={mensaje} success={exito} />}
+      </div>
+      </main>
+    </>
   );
 }

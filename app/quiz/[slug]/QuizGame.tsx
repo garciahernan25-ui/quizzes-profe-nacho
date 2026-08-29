@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
+import Navbar from "../../components/Navbar";
+import { Trophy, Clock, Lightbulb, Hand, ArrowRight } from "../../components/icons";
 
 type Pregunta = {
   id: string;
@@ -120,98 +123,49 @@ export default function QuizGame({
   // PANTALLA 1: elegir ronda
   if (!rondaActiva) {
     return (
-      <main style={{ padding: "3rem", maxWidth: "700px", margin: "0 auto" }}>
-        <a href="/" style={{ color: "var(--button-bg)", textDecoration: "none" }}>
-          ← Volver
-        </a>
+      <>
+        <Navbar
+          back={{ href: "/", label: "Volver" }}
+          right={
+            studentName ? (
+              <>
+                <span className="meta-pill"><Hand size={15} /> Hola, {studentName}</span>
+                <button onClick={cerrarSesion} className="btn btn-ghost btn-sm">Cerrar sesión</button>
+              </>
+            ) : (
+              <Link href="/ingresar" className="btn btn-primary btn-sm">Ingresar</Link>
+            )
+          }
+        />
 
-        {studentName ? (
-          <div
-            style={{
-              margin: "1rem 0",
-              padding: "0.7rem 1.2rem",
-              borderRadius: "10px",
-              background: "var(--card-bg)",
-              border: "1px solid var(--card-border)",
-              display: "inline-block",
-            }}
-          >
-            👋 ¡Hola, {studentName}!
+        <main className="page page-mid stack-lg animate-in">
+          <header className="stack-sm">
+            <span className="eyebrow">Elegí una ronda</span>
+            <h1 className="h-hero">{quizTitle}</h1>
+            <p className="lead">Tocá una ronda para empezar a jugar.</p>
+          </header>
+
+          <div className="grid-1" style={{ gap: "1rem" }}>
+            {rondas.map((ronda) => (
+              <button
+                key={ronda.id}
+                onClick={() => empezarRonda(ronda)}
+                className="card card-link"
+                style={{ textAlign: "left" }}
+              >
+                <div className="row between" style={{ alignItems: "flex-start" }}>
+                  <div>
+                    <div className="card-icon" style={{ marginBottom: "0.75rem" }}>{ronda.icon}</div>
+                    <div className="h2" style={{ marginBottom: "0.3rem" }}>{ronda.name}</div>
+                    <div className="lead" style={{ fontSize: "0.95rem" }}>{ronda.description}</div>
+                  </div>
+                  <span className="badge">{ronda.questions.length} preguntas</span>
+                </div>
+              </button>
+            ))}
           </div>
-        ) : (
-          <a
-            href="/ingresar"
-            style={{
-              display: "inline-block",
-              margin: "1rem 0",
-              padding: "0.6rem 1.2rem",
-              borderRadius: "10px",
-              background: "var(--button-bg)",
-              color: "var(--button-text)",
-              textDecoration: "none",
-              fontWeight: "bold",
-            }}
-          >
-            Ingresar / Registrarse
-          </a>
-        )}
-
-        <h1 style={{ fontSize: "2rem", fontWeight: "bold", margin: "1rem 0" }}>
-          {quizTitle}
-        </h1>
-        <p style={{ color: "var(--text-secondary)", marginBottom: "2rem" }}>
-          Elegí una ronda para empezar:
-        </p>
-        <div style={{ display: "grid", gap: "1rem" }}>
-          {rondas.map((ronda) => (
-            <button
-              key={ronda.id}
-              onClick={() => empezarRonda(ronda)}
-              style={{
-                textAlign: "left",
-                padding: "1.5rem",
-                borderRadius: "12px",
-                border: "1px solid var(--card-border)",
-                background: "var(--card-bg)",
-                cursor: "pointer",
-                boxShadow: "var(--shadow)",
-                color: "inherit",
-              }}
-            >
-              <div style={{ fontSize: "1.8rem" }}>{ronda.icon}</div>
-              <div style={{ fontSize: "1.3rem", fontWeight: "bold", margin: "0.3rem 0" }}>
-                {ronda.name}
-              </div>
-              <div style={{ color: "var(--text-secondary)", fontSize: "0.95rem" }}>
-                {ronda.description}
-              </div>
-              <div style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginTop: "0.5rem" }}>
-                {ronda.questions.length} preguntas
-              </div>
-            </button>
-          ))}
-        </div>
-
-        {studentName && (
-          <div style={{ marginTop: "2rem", textAlign: "center" }}>
-            <button
-              onClick={cerrarSesion}
-              style={{
-                padding: "0.5rem 1.2rem",
-                borderRadius: "8px",
-                border: "1px solid #ef4444",
-                background: "var(--card-bg)",
-                color: "#ef4444",
-                cursor: "pointer",
-                fontSize: "0.9rem",
-                fontWeight: "bold",
-              }}
-            >
-              Cerrar sesión
-            </button>
-          </div>
-        )}
-      </main>
+        </main>
+      </>
     );
   }
 
@@ -220,148 +174,91 @@ export default function QuizGame({
     const nota = (correctas / rondaActiva.questions.length) * 10;
     const notaRedondeada = Math.round(nota * 10) / 10;
     let mensaje = "A repasar y probar de nuevo.";
-    if (nota >= 8.5) mensaje = "¡Genio total! 🌟";
+    if (nota >= 8.5) mensaje = "¡Genio total!";
     else if (nota >= 6) mensaje = "¡Muy bien!";
     else if (nota >= 3.5) mensaje = "Bien encaminado.";
     return (
-      <main style={{ padding: "3rem", maxWidth: "600px", margin: "0 auto", textAlign: "center" }}>
-        <h1 style={{ fontSize: "1.6rem", color: "var(--text-secondary)" }}>
-          {rondaActiva.name}
-        </h1>
-        <div style={{ fontSize: "3.5rem", fontWeight: "bold", color: "#f59e0b", margin: "1rem 0" }}>
-          {notaRedondeada.toFixed(1)} <span style={{ fontSize: "1.5rem", color: "var(--text-muted)" }}>/ 10</span>
-        </div>
-        <p style={{ fontSize: "1.2rem", marginBottom: "0.5rem" }}>{mensaje}</p>
-        <p style={{ color: "var(--text-secondary)", marginBottom: "2rem" }}>
-          Correctas: {correctas} de {rondaActiva.questions.length}
-        </p>
-        <button
-          onClick={volverInicio}
-          style={{
-            padding: "0.9rem 1.5rem",
-            borderRadius: "10px",
-            border: "none",
-            background: "var(--button-bg)",
-            color: "var(--button-text)",
-            fontSize: "1rem",
-            cursor: "pointer",
-          }}
-        >
-          Elegir otra ronda
-        </button>
-      </main>
+      <>
+        <Navbar />
+        <main className="page page-narrow animate-in" style={{ paddingTop: "clamp(2rem, 8vh, 5rem)" }}>
+          <div className="card card-pad-lg stack-md" style={{ textAlign: "center" }}>
+            <span className="eyebrow">{rondaActiva.name}</span>
+            <div className="score-number">
+              {notaRedondeada.toFixed(1)}
+              <span style={{ fontSize: "1.5rem", color: "var(--text-muted)", WebkitTextFillColor: "var(--text-muted)" }}> / 10</span>
+            </div>
+            <p className="h2">{mensaje}</p>
+            <p className="lead">Correctas: {correctas} de {rondaActiva.questions.length}</p>
+            <button onClick={volverInicio} className="btn btn-primary btn-lg" style={{ alignSelf: "center" }}>
+              Elegir otra ronda
+            </button>
+          </div>
+        </main>
+      </>
     );
   }
 
   // PANTALLA 2: jugando
   const pregunta = rondaActiva.questions[indice];
+  const progreso = ((indice + (respondida ? 1 : 0)) / rondaActiva.questions.length) * 100;
   return (
-    <main style={{ padding: "3rem", maxWidth: "700px", margin: "0 auto" }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          color: "var(--text-muted)",
-          marginBottom: "1rem",
-        }}
-      >
-        <span>
-          Pregunta {indice + 1} de {rondaActiva.questions.length}
-        </span>
-        <span>🏆 {puntaje}</span>
-      </div>
-
-      <h2 style={{ fontSize: "1.4rem", fontWeight: "bold", marginBottom: "1.5rem" }}>
-        {pregunta.question}
-      </h2>
-
-      {pregunta.questionImage && (
-        <img
-          src={pregunta.questionImage}
-          alt=""
-          style={{ maxWidth: "100%", borderRadius: "10px", marginBottom: "1.5rem" }}
-        />
-      )}
-
-      <div style={{ display: "grid", gap: "0.8rem" }}>
-        {pregunta.options.map((opcion, i) => {
-          let fondo = "var(--card-bg)";
-          let borde = "var(--card-border)";
-          let color = "inherit";
-          if (respondida) {
-            if (i === pregunta.correctIndex) {
-              fondo = "#dcfce7";
-              borde = "#22c55e";
-              color = "#166534";
-            } else if (i === elegida) {
-              fondo = "#fee2e2";
-              borde = "#ef4444";
-              color = "#991b1b";
-            }
-          }
-          return (
-            <button
-              key={i}
-              onClick={() => responder(i)}
-              disabled={respondida}
-              style={{
-                textAlign: "left",
-                padding: "1rem",
-                borderRadius: "10px",
-                border: `2px solid ${borde}`,
-                background: fondo,
-                color: color,
-                cursor: respondida ? "default" : "pointer",
-                fontSize: "1rem",
-              }}
-            >
-              {pregunta.optionImages && pregunta.optionImages[i] ? (
-                <img
-                  src={pregunta.optionImages[i]}
-                  alt=""
-                  style={{ maxWidth: "100%", borderRadius: "6px" }}
-                />
-              ) : (
-                opcion
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      {respondida && (
-        <div
-          style={{
-            marginTop: "1.5rem",
-            padding: "1rem",
-            borderRadius: "10px",
-            background: "var(--card-bg)",
-            color: "inherit",
-          }}
-        >
-          {pregunta.explanation}
+    <>
+      <Navbar right={<span className="badge"><Trophy size={14} /> {puntaje}</span>} />
+      <main className="page page-mid stack-md animate-in">
+        <div className="stack-sm" style={{ gap: "0.5rem" }}>
+          <div className="row between muted">
+            <span>Pregunta {indice + 1} de {rondaActiva.questions.length}</span>
+            {!respondida && <span className="icon-inline"><Clock size={14} /> {Math.round(tiempo)}</span>}
+          </div>
+          <div className="progress-track">
+            <div className="progress-fill" style={{ width: `${progreso}%` }} />
+          </div>
+          {!respondida && (
+            <div className="timebar" style={{ marginTop: "0.15rem" }}>
+              <div className="timebar-fill" style={{ width: `${tiempo}%` }} />
+            </div>
+          )}
         </div>
-      )}
 
-      {respondida && (
-        <button
-          onClick={siguiente}
-          style={{
-            marginTop: "1.5rem",
-            width: "100%",
-            padding: "1rem",
-            borderRadius: "10px",
-            border: "none",
-            background: "#f59e0b",
-            color: "#1f2233",
-            fontSize: "1.1rem",
-            fontWeight: "bold",
-            cursor: "pointer",
-          }}
-        >
-          {indice < rondaActiva.questions.length - 1 ? "Siguiente →" : "Ver resultado 🏁"}
-        </button>
-      )}
-    </main>
+        <h2 className="h1" style={{ fontSize: "1.55rem" }}>{pregunta.question}</h2>
+
+        {pregunta.questionImage && (
+          <img src={pregunta.questionImage} alt="" style={{ borderRadius: "var(--r-md)" }} />
+        )}
+
+        <div className="grid-1">
+          {pregunta.options.map((opcion, i) => {
+            let cls = "option";
+            if (respondida) {
+              if (i === pregunta.correctIndex) cls += " option-correct";
+              else if (i === elegida) cls += " option-wrong";
+            }
+            return (
+              <button key={i} onClick={() => responder(i)} disabled={respondida} className={cls}>
+                {pregunta.optionImages && pregunta.optionImages[i] ? (
+                  <img src={pregunta.optionImages[i]} alt="" style={{ maxWidth: "100%", borderRadius: "var(--r-sm)" }} />
+                ) : (
+                  opcion
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {respondida && pregunta.explanation && (
+          <div className="explanation animate-in" style={{ display: "flex", gap: "0.6rem", alignItems: "flex-start" }}>
+            <Lightbulb size={18} style={{ flexShrink: 0, marginTop: 2, color: "var(--brand-hover)" }} />
+            <span>{pregunta.explanation}</span>
+          </div>
+        )}
+
+        {respondida && (
+          <button onClick={siguiente} className="btn btn-primary btn-lg btn-block animate-in">
+            {indice < rondaActiva.questions.length - 1 ? "Siguiente" : "Ver resultado"}
+            <ArrowRight size={18} />
+          </button>
+        )}
+      </main>
+    </>
   );
 }

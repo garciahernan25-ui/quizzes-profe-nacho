@@ -2,9 +2,12 @@ export const dynamic = "force-dynamic";
 import { db } from "../../lib/db";
 import { quizzes, rounds, questions } from "../../lib/db/schema";
 import { eq } from "drizzle-orm";
+import Link from "next/link";
 import BotonCopiar from "./BotonCopiar";
 import BotonSalir from "./BotonSalir";
 import BotonBorrarQuiz from "./BotonBorrarQuiz";
+import Navbar from "../components/Navbar";
+import { Plus, ChartBar } from "../components/icons";
 
 export default async function AdminPage() {
   const listaQuizzes = await db.select().from(quizzes);
@@ -29,144 +32,55 @@ export default async function AdminPage() {
   );
 
   return (
-    <main style={{ padding: "1rem", maxWidth: "1000px", margin: "0 auto" }}>
-      <h1 style={{ fontSize: "2rem", fontWeight: "bold", marginBottom: "0.5rem" }}>
-        Panel de administración
-      </h1>
+    <>
+      <Navbar right={<BotonSalir />} />
+      <main className="page stack-lg animate-in">
+        <header className="stack-sm">
+          <span className="eyebrow">Administración</span>
+          <h1 className="h1">Tus quizzes</h1>
+          <p className="lead">Creá, editá y hacé seguimiento de tus alumnos.</p>
+        </header>
 
-      <div style={{ marginBottom: "1rem" }}>
-        <BotonSalir />
-      </div>
-
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.8rem", marginBottom: "1.5rem" }}>
-        <a
-          href="/admin/seguimiento"
-          style={{
-            display: "inline-block",
-            padding: "0.7rem 1.2rem",
-            borderRadius: "10px",
-            background: "#7c3aed",
-            color: "white",
-            textDecoration: "none",
-            fontWeight: "bold",
-          }}
-        >
-          📊 Seguimiento de alumnos
-        </a>
-        <a
-          href="/admin/nuevo-quiz"
-          style={{
-            display: "inline-block",
-            padding: "0.7rem 1.2rem",
-            borderRadius: "10px",
-            background: "#16a34a",
-            color: "white",
-            textDecoration: "none",
-            fontWeight: "bold",
-          }}
-        >
-          + Nuevo quiz
-        </a>
-        <a
-          href="/admin/nueva-seccion"
-          style={{
-            display: "inline-block",
-            padding: "0.7rem 1.2rem",
-            borderRadius: "10px",
-            background: "#0ea5e9",
-            color: "white",
-            textDecoration: "none",
-            fontWeight: "bold",
-          }}
-        >
-          + Nueva sección
-        </a>
-        <a
-          href="/admin/preguntas"
-          style={{
-            display: "inline-block",
-            padding: "0.7rem 1.2rem",
-            borderRadius: "10px",
-            background: "#6b7280",
-            color: "white",
-            textDecoration: "none",
-            fontWeight: "bold",
-          }}
-        >
-          Gestionar preguntas
-        </a>
-      </div>
-
-      <p style={{ color: "var(--text-secondary)", marginBottom: "2rem" }}>
-        Acá vas a poder gestionar tus quizzes.
-      </p>
-
-      {filas.length === 0 ? (
-        <p style={{ color: "var(--text-secondary)" }}>Todavía no hay quizzes creados.</p>
-      ) : (
-        <div style={{ display: "grid", gap: "1rem", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}>
-          {filas.map((fila) => (
-            <div
-              key={fila.id}
-              style={{
-                border: "1px solid var(--card-border)",
-                borderRadius: "12px",
-                background: "var(--card-bg)",
-                boxShadow: "var(--shadow)",
-                padding: "1rem",
-                display: "flex",
-                flexDirection: "column",
-                gap: "0.5rem",
-              }}
-            >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "0.5rem" }}>
-                <h2 style={{ fontSize: "1.2rem", fontWeight: "bold", margin: 0, wordBreak: "break-word" }}>
-                  {fila.title}
-                </h2>
-                <span
-                  style={{
-                    whiteSpace: "nowrap",
-                    fontSize: "0.85rem",
-                    fontWeight: "bold",
-                    color: fila.publicado ? "#16a34a" : "var(--text-muted)",
-                    border: `1px solid ${fila.publicado ? "#16a34a" : "var(--card-border)"}`,
-                    borderRadius: "20px",
-                    padding: "0.2rem 0.6rem",
-                    backgroundColor: fila.publicado ? "#dcfce7" : "transparent",
-                  }}
-                >
-                  {fila.publicado ? "● Publicado" : "○ Borrador"}
-                </span>
-              </div>
-
-              <div style={{ display: "flex", gap: "1rem", color: "var(--text-secondary)", fontSize: "0.9rem" }}>
-                <span>Rondas: {fila.cantRondas}</span>
-                <span>Preguntas: {fila.cantPreguntas}</span>
-              </div>
-
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginTop: "0.5rem" }}>
-                <BotonCopiar slug={fila.slug} />
-                <a
-                  href={`/admin/quiz/${fila.id}`}
-                  style={{
-                    padding: "0.4rem 0.8rem",
-                    borderRadius: "8px",
-                    border: "1px solid var(--button-bg)",
-                    background: "var(--card-bg)",
-                    color: "var(--button-bg)",
-                    textDecoration: "none",
-                    fontSize: "0.85rem",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  Ver preguntas
-                </a>
-                <BotonBorrarQuiz quizId={fila.id} titulo={fila.title} />
-              </div>
-            </div>
-          ))}
+        <div className="row">
+          <Link href="/admin/nuevo-quiz" className="btn btn-primary"><Plus size={17} /> Nuevo quiz</Link>
+          <Link href="/admin/nueva-seccion" className="btn btn-ghost"><Plus size={17} /> Nueva sección</Link>
+          <Link href="/admin/preguntas" className="btn btn-ghost">Gestionar preguntas</Link>
+          <Link href="/admin/seguimiento" className="btn btn-ghost"><ChartBar size={16} /> Seguimiento de alumnos</Link>
         </div>
-      )}
-    </main>
+
+        {filas.length === 0 ? (
+          <div className="card" style={{ textAlign: "center" }}>
+            <p className="lead">Todavía no hay quizzes creados.</p>
+          </div>
+        ) : (
+          <div className="grid-cards">
+            {filas.map((fila) => (
+              <div key={fila.id} className="card stack-md">
+                <div className="row between" style={{ alignItems: "flex-start" }}>
+                  <h2 className="h2" style={{ wordBreak: "break-word" }}>{fila.title}</h2>
+                  <span className={`badge ${fila.publicado ? "badge-success" : "badge-muted"}`}>
+                    <span className="dot" style={{ background: fila.publicado ? "var(--success)" : "var(--text-muted)" }} />
+                    {fila.publicado ? "Publicado" : "Borrador"}
+                  </span>
+                </div>
+
+                <div className="row" style={{ gap: "0.5rem" }}>
+                  <span className="badge">{fila.cantRondas} rondas</span>
+                  <span className="badge">{fila.cantPreguntas} preguntas</span>
+                </div>
+
+                <div className="row" style={{ gap: "0.5rem" }}>
+                  <BotonCopiar slug={fila.slug} />
+                  <Link href={`/admin/quiz/${fila.id}`} className="btn btn-ghost btn-sm">
+                    Ver preguntas
+                  </Link>
+                  <BotonBorrarQuiz quizId={fila.id} titulo={fila.title} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </main>
+    </>
   );
 }

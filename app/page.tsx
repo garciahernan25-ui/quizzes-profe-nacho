@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import LogoutButton from "./LogoutButton";
+import Navbar from "./components/Navbar";
 
 export default async function Home() {
   // Leer cookie de sesión del estudiante
@@ -16,83 +17,55 @@ export default async function Home() {
     .where(eq(quizzes.isPublished, true));
 
   return (
-    <main style={{ padding: "3rem", maxWidth: "800px", margin: "0 auto" }}>
-      <h1 style={{ fontSize: "2.2rem", fontWeight: "bold", marginBottom: "0.5rem" }}>
-        Quizzes Profe Nacho
-      </h1>
-
-      {studentName ? (
-        <div
-          style={{
-            marginBottom: "1.5rem",
-            padding: "0.7rem 1.2rem",
-            borderRadius: "10px",
-            background: "var(--card-bg)",
-            border: "1px solid var(--card-border)",
-            display: "flex",
-            alignItems: "center",
-            gap: "1rem",
-            flexWrap: "wrap",
-          }}
-        >
-          <span>👋 ¡Hola, {studentName}!</span>
-          <LogoutButton />
-        </div>
-      ) : (
-        <a
-          href="/ingresar"
-          style={{
-            display: "inline-block",
-            marginBottom: "1.5rem",
-            padding: "0.6rem 1.2rem",
-            borderRadius: "10px",
-            background: "var(--button-bg)",
-            color: "var(--button-text)",
-            textDecoration: "none",
-            fontWeight: "bold",
-          }}
-        >
-          Ingresar / Registrarse
-        </a>
-      )}
-
-      <p style={{ color: "var(--text-secondary)", marginBottom: "2rem" }}>
-        Elegí un quiz para empezar a jugar.
-      </p>
-
-      {listaQuizzes.length === 0 ? (
-        <p>Todavía no hay quizzes publicados.</p>
-      ) : (
-        <div style={{ display: "grid", gap: "1rem" }}>
-          {listaQuizzes.map((quiz) => (
-            <Link
-              key={quiz.id}
-              href={`/quiz/${quiz.slug}`}
-              style={{
-                display: "block",
-                padding: "1.5rem",
-                borderRadius: "12px",
-                border: "1px solid var(--card-border)",
-                textDecoration: "none",
-                color: "inherit",
-                backgroundColor: "var(--card-bg)",
-                boxShadow: "var(--shadow)",
-              }}
-            >
-              <div style={{ fontSize: "2rem" }}>{quiz.icon}</div>
-              <h2 style={{ fontSize: "1.4rem", fontWeight: "bold", margin: "0.5rem 0" }}>
-                {quiz.title}
-              </h2>
-              <p style={{ color: "var(--text-secondary)", margin: 0 }}>
-                {quiz.description}
-              </p>
-              <p style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginTop: "0.5rem" }}>
-                {quiz.subject} · {quiz.level}
-              </p>
+    <>
+      <Navbar
+        right={
+          studentName ? (
+            <>
+              <span className="meta-pill">👋 Hola, {studentName}</span>
+              <LogoutButton />
+            </>
+          ) : (
+            <Link href="/ingresar" className="btn btn-primary btn-sm">
+              Ingresar
             </Link>
-          ))}
-        </div>
-      )}
-    </main>
+          )
+        }
+      />
+
+      <main className="page page-mid stack-lg animate-in">
+        <header className="stack-md" style={{ paddingTop: "1.5rem" }}>
+          <span className="eyebrow">Plataforma de quizzes</span>
+          <h1 className="h-hero">Aprendé jugando,<br />un quiz a la vez.</h1>
+          <p className="lead">Elegí un quiz para empezar. Sumás puntos por acertar rápido.</p>
+        </header>
+
+        {listaQuizzes.length === 0 ? (
+          <div className="card" style={{ textAlign: "center" }}>
+            <p className="lead">Todavía no hay quizzes publicados.</p>
+          </div>
+        ) : (
+          <section className="grid-cards">
+            {listaQuizzes.map((quiz) => (
+              <Link
+                key={quiz.id}
+                href={`/quiz/${quiz.slug}`}
+                className="card card-link"
+              >
+                <div className="card-icon">{quiz.icon}</div>
+                <h2 className="h2" style={{ marginBottom: "0.35rem" }}>{quiz.title}</h2>
+                <p className="lead" style={{ fontSize: "0.95rem", marginBottom: "1rem" }}>
+                  {quiz.description}
+                </p>
+                <div className="row" style={{ gap: "0.5rem" }}>
+                  {quiz.subject && <span className="badge">{quiz.subject}</span>}
+                  {quiz.level && <span className="badge badge-muted">{quiz.level}</span>}
+                </div>
+              </Link>
+            ))}
+          </section>
+        )}
+      </main>
+    </>
   );
 }

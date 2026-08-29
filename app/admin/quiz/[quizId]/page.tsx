@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft, Plus } from "../../../components/icons";
 
 type Pregunta = { id: string; question: string; seccion: string };
 
@@ -43,94 +45,34 @@ export default function PreguntasDelQuiz() {
   }
 
   return (
-    <main style={{ padding: "2rem 1rem", maxWidth: "800px", margin: "0 auto" }}>
-      <a href="/admin" style={{ color: "var(--button-bg)", textDecoration: "none" }}>
-        ← Volver al panel
-      </a>
-      <h1 style={{ fontSize: "1.8rem", fontWeight: "bold", margin: "1rem 0" }}>
-        Preguntas del quiz
-      </h1>
-
-      <a
-        href={`/admin/nueva-pregunta?ronda=${quizId}`}
-        style={{
-          display: "inline-block",
-          marginBottom: "1.5rem",
-          padding: "0.7rem 1.2rem",
-          borderRadius: "10px",
-          background: "#16a34a",
-          color: "white",
-          textDecoration: "none",
-          fontWeight: "bold",
-        }}
-      >
-        + Agregar pregunta
-      </a>
+    <main className="page page-mid stack-md animate-in" style={{ paddingTop: "clamp(1.5rem, 5vh, 3rem)" }}>
+      <Link href="/admin" className="back-link"><ArrowLeft size={16} /> Volver al panel</Link>
+      <div className="row between">
+        <h1 className="h1">Preguntas del quiz</h1>
+        <Link href={`/admin/nueva-pregunta?ronda=${quizId}`} className="btn btn-primary">
+          <Plus size={17} /> Agregar pregunta
+        </Link>
+      </div>
 
       {cargando ? (
-        <p>Cargando...</p>
+        <p className="lead">Cargando...</p>
       ) : preguntas.length === 0 ? (
-        <p style={{ color: "var(--text-secondary)" }}>
-          Este quiz todavía no tiene preguntas.
-        </p>
+        <div className="card" style={{ textAlign: "center" }}>
+          <p className="lead">Este quiz todavía no tiene preguntas.</p>
+        </div>
       ) : (
         <>
-          <p style={{ color: "var(--text-secondary)", marginBottom: "1.5rem" }}>
-            Total: {preguntas.length} preguntas
-          </p>
-          <div style={{ display: "grid", gap: "0.8rem" }}>
+          <p className="lead">Total: {preguntas.length} preguntas</p>
+          <div className="grid-1">
             {preguntas.map((p) => (
-              <div
-                key={p.id}
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  flexWrap: "wrap",
-                  gap: "1rem",
-                  padding: "1rem",
-                  borderRadius: "10px",
-                  border: "1px solid var(--card-border)",
-                  background: "var(--card-bg)",
-                }}
-              >
+              <div key={p.id} className="card row between" style={{ padding: "1rem 1.15rem" }}>
                 <div style={{ minWidth: 0, flex: "1 1 auto" }}>
-                  <div style={{ fontWeight: "bold", wordBreak: "break-word" }}>
-                    {p.question}
-                  </div>
-                  <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
-                    {p.seccion}
-                  </div>
+                  <div style={{ fontWeight: 600, wordBreak: "break-word" }}>{p.question}</div>
+                  <div className="muted">{p.seccion}</div>
                 </div>
-                <div style={{ display: "flex", gap: "0.5rem", flexShrink: 0 }}>
-                  <a
-                    href={`/admin/editar-pregunta/${p.id}`}
-                    style={{
-                      padding: "0.5rem 1rem",
-                      borderRadius: "8px",
-                      border: "1px solid var(--button-bg)",
-                      background: "var(--card-bg)",
-                      color: "var(--button-bg)",
-                      textDecoration: "none",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    Editar
-                  </a>
-                  <button
-                    onClick={() => borrar(p.id)}
-                    style={{
-                      padding: "0.5rem 1rem",
-                      borderRadius: "8px",
-                      border: "1px solid #ef4444",
-                      background: "var(--card-bg)",
-                      color: "#ef4444",
-                      cursor: "pointer",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    Borrar
-                  </button>
+                <div className="row" style={{ gap: "0.5rem", flexShrink: 0 }}>
+                  <Link href={`/admin/editar-pregunta/${p.id}`} className="btn btn-ghost btn-sm">Editar</Link>
+                  <button onClick={() => borrar(p.id)} className="btn btn-danger btn-sm">Borrar</button>
                 </div>
               </div>
             ))}

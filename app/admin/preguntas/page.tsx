@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
+import { ArrowLeft } from "../../components/icons";
 
 type Pregunta = { id: string; roundId: string; question: string };
 type Seccion = { id: string; name: string };
@@ -42,50 +44,21 @@ export default function GestionarPreguntas() {
   }
 
   return (
-    <main style={{ padding: "2rem 1rem", maxWidth: "800px", margin: "0 auto" }}>
-      <a href="/admin" style={{ color: "var(--button-bg)", textDecoration: "none" }}>← Volver al panel</a>
-      <h1 style={{ fontSize: "1.8rem", fontWeight: "bold", margin: "1rem 0" }}>Gestionar preguntas</h1>
-      <p style={{ color: "var(--text-secondary)", marginBottom: "1.5rem" }}>
-        Total: {preguntas.length} preguntas
-      </p>
+    <main className="page page-mid stack-md animate-in" style={{ paddingTop: "clamp(1.5rem, 5vh, 3rem)" }}>
+      <Link href="/admin" className="back-link"><ArrowLeft size={16} /> Volver al panel</Link>
+      <header className="stack-sm">
+        <h1 className="h1">Gestionar preguntas</h1>
+        <p className="lead">Total: {preguntas.length} preguntas</p>
+      </header>
 
-      <div style={{ display: "grid", gap: "0.8rem" }}>
+      <div className="grid-1">
         {preguntas.map((p) => (
-          <div
-            key={p.id}
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              flexWrap: "wrap",
-              gap: "1rem",
-              padding: "1rem",
-              borderRadius: "10px",
-              border: "1px solid var(--card-border)",
-              background: "var(--card-bg)",
-            }}
-          >
+          <div key={p.id} className="card row between" style={{ padding: "1rem 1.15rem" }}>
             <div style={{ minWidth: 0, flex: "1 1 auto" }}>
-              <div style={{ fontWeight: "bold", wordBreak: "break-word" }}>{p.question}</div>
-              <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
-                {nombreSeccion(p.roundId)}
-              </div>
+              <div style={{ fontWeight: 600, wordBreak: "break-word" }}>{p.question}</div>
+              <div className="muted">{nombreSeccion(p.roundId)}</div>
             </div>
-            <button
-              onClick={() => borrar(p.id)}
-              style={{
-                padding: "0.5rem 1rem",
-                borderRadius: "8px",
-                border: "1px solid #ef4444",
-                background: "var(--card-bg)",
-                color: "#ef4444",
-                cursor: "pointer",
-                whiteSpace: "nowrap",
-                flexShrink: 0,
-              }}
-            >
-              Borrar
-            </button>
+            <button onClick={() => borrar(p.id)} className="btn btn-danger btn-sm">Borrar</button>
           </div>
         ))}
       </div>

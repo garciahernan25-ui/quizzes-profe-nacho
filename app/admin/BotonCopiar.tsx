@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Check } from "../components/icons";
 
 export default function BotonCopiar({ slug }: { slug: string }) {
   const [copiado, setCopiado] = useState(false);
@@ -13,15 +14,8 @@ export default function BotonCopiar({ slug }: { slug: string }) {
   }
 
   return (
-    <button
-      onClick={copiar}
-      style={{
-        padding: "0.4rem 0.8rem", borderRadius: "8px", border: "1px solid #2563eb",
-        background: copiado ? "#dcfce7" : "white", color: "#2563eb",
-        cursor: "pointer", fontSize: "0.85rem", whiteSpace: "nowrap",
-      }}
-    >
-      {copiado ? "✓ Copiado" : "Copiar enlace"}
+    <button onClick={copiar} className={`btn btn-sm ${copiado ? "btn-success" : "btn-ghost"}`}>
+      {copiado ? <><Check size={15} /> Copiado</> : "Copiar enlace"}
     </button>
   );
 }

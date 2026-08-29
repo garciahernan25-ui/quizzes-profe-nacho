@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
+import { ArrowLeft, Notice } from "../../components/icons";
 
 type Quiz = { id: string; title: string };
 
@@ -45,64 +47,47 @@ export default function NuevaSeccion() {
     }
   }
 
-  const label = { display: "block", fontWeight: "bold", margin: "1rem 0 0.3rem" } as const;
-  const input = {
-    width: "100%",
-    padding: "0.6rem",
-    borderRadius: "8px",
-    border: "1px solid var(--card-border)",
-    background: "var(--card-bg)",
-    color: "var(--foreground)",
-    fontSize: "1rem",
-    boxSizing: "border-box",
-  } as const;
+  const exito = mensaje.startsWith("✓");
 
   return (
-    <main style={{ padding: "2rem 1rem", maxWidth: "600px", margin: "0 auto" }}>
-      <a href="/admin" style={{ color: "var(--button-bg)", textDecoration: "none" }}>← Volver al panel</a>
-      <h1 style={{ fontSize: "1.8rem", fontWeight: "bold", margin: "1rem 0" }}>Nueva sección</h1>
-      <p style={{ color: "var(--text-secondary)" }}>
-        Una sección es una parte dentro de un quiz (por ejemplo un nivel o un subtema).
-      </p>
+    <main className="page page-narrow animate-in" style={{ paddingTop: "clamp(1.5rem, 5vh, 3rem)" }}>
+      <Link href="/admin" className="back-link" style={{ marginBottom: "1.5rem" }}><ArrowLeft size={16} /> Volver al panel</Link>
 
-      <label style={label}>¿A qué quiz pertenece?</label>
-      <select value={quizId} onChange={(e) => setQuizId(e.target.value)} style={input}>
-        {quizzes.map((q) => (
-          <option key={q.id} value={q.id}>{q.title}</option>
-        ))}
-      </select>
+      <div className="card card-pad-lg stack-md">
+        <header className="stack-sm">
+          <h1 className="h1">Nueva sección</h1>
+          <p className="lead">Una sección es una parte dentro de un quiz (un nivel o un subtema).</p>
+        </header>
 
-      <label style={label}>Nombre de la sección *</label>
-      <input value={name} onChange={(e) => setName(e.target.value)} style={input} placeholder="Ej: Nivel fácil" />
+        <div>
+          <div className="field">
+            <label className="label">¿A qué quiz pertenece?</label>
+            <select className="select" value={quizId} onChange={(e) => setQuizId(e.target.value)}>
+              {quizzes.map((q) => (
+                <option key={q.id} value={q.id}>{q.title}</option>
+              ))}
+            </select>
+          </div>
+          <div className="field">
+            <label className="label">Nombre de la sección *</label>
+            <input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Ej: Nivel fácil" />
+          </div>
+          <div className="field">
+            <label className="label">Ícono (un emoji)</label>
+            <input className="input" value={icon} onChange={(e) => setIcon(e.target.value)} placeholder="Ej: 📗" />
+          </div>
+          <div className="field">
+            <label className="label">Descripción</label>
+            <input className="input" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="De qué trata esta sección" />
+          </div>
+        </div>
 
-      <label style={label}>Ícono (un emoji)</label>
-      <input value={icon} onChange={(e) => setIcon(e.target.value)} style={input} placeholder="Ej: 📗" />
+        <button onClick={guardar} disabled={guardando} className="btn btn-primary btn-lg btn-block">
+          {guardando ? "Creando..." : "Crear sección"}
+        </button>
 
-      <label style={label}>Descripción</label>
-      <input value={description} onChange={(e) => setDescription(e.target.value)} style={input} placeholder="De qué trata esta sección" />
-
-      <button
-        onClick={guardar}
-        disabled={guardando}
-        style={{
-          marginTop: "1.5rem",
-          width: "100%",
-          padding: "0.9rem",
-          borderRadius: "10px",
-          border: "none",
-          background: "var(--button-bg)",
-          color: "var(--button-text)",
-          fontSize: "1.1rem",
-          fontWeight: "bold",
-          cursor: "pointer",
-        }}
-      >
-        {guardando ? "Creando..." : "Crear sección"}
-      </button>
-
-      {mensaje && (
-        <p style={{ marginTop: "1rem", textAlign: "center", fontWeight: "bold" }}>{mensaje}</p>
-      )}
+        {mensaje && <Notice message={mensaje} success={exito} />}
+      </div>
     </main>
   );
 }
