@@ -4,6 +4,7 @@ import { quizzes, rounds, questions } from "../../lib/db/schema";
 import { eq } from "drizzle-orm";
 import Link from "next/link";
 import BotonCopiar from "./BotonCopiar";
+import BotonQR from "./BotonQR";
 import BotonSalir from "./BotonSalir";
 import BotonBorrarQuiz from "./BotonBorrarQuiz";
 import Navbar from "../components/Navbar";
@@ -71,6 +72,7 @@ export default async function AdminPage() {
 
                 <div className="row" style={{ gap: "0.5rem" }}>
                   <BotonCopiar slug={fila.slug} />
+                  <BotonQR slug={fila.slug} titulo={fila.title} />
                   <Link href={`/admin/quiz/${fila.id}`} className="btn btn-ghost btn-sm">
                     Ver preguntas
                   </Link>
