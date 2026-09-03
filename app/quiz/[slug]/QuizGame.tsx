@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Navbar from "../../components/Navbar";
 import { Trophy, Clock, Lightbulb, Hand, ArrowRight } from "../../components/icons";
+import { tiempoInicial, calcularBonus } from "../../../lib/quizTime";
 
 type Pregunta = {
   id: string;
@@ -27,27 +28,39 @@ export default function QuizGame({
   quizTitle,
   rondas,
   studentName,
+  timeLimit,
 }: {
   quizTitle: string;
   rondas: Ronda[];
   studentName: string | null;
+  timeLimit: number | null;
 }) {
   const [rondaActiva, setRondaActiva] = useState<Ronda | null>(null);
   const [indice, setIndice] = useState(0);
   const [puntaje, setPuntaje] = useState(0);
-  const [correctas, setCorrectas] = useState(0); // NUEVO
+  const [correctas, setCorrectas] = useState(0);
   const [respondida, setRespondida] = useState(false);
   const [elegida, setElegida] = useState<number | null>(null);
   const [terminado, setTerminado] = useState(false);
-  const [tiempo, setTiempo] = useState(100);
+  const [tiempo, setTiempo] = useState<number | null>(() => tiempoInicial(timeLimit));
 
   useEffect(() => {
-    if (respondida || !rondaActiva || terminado) return;
+    if (respondida || !rondaActiva || terminado || tiempo === null) return;
     const t = setInterval(() => {
-      setTiempo((prev) => (prev > 0 ? prev - 2 : 0));
-    }, 200);
+      setTiempo((prev) => {
+        if (prev === null) return prev;
+        const nuevo = prev - 1;
+        if (nuevo <= 0) {
+          clearInterval(t);
+          setRespondida(true);
+          setElegida(null);
+          return 0;
+        }
+        return nuevo;
+      });
+    }, 1000);
     return () => clearInterval(t);
-  }, [respondida, rondaActiva, indice, terminado]);
+  }, [respondida, rondaActiva, indice, terminado, timeLimit]);
 
   function empezarRonda(ronda: Ronda) {
     if (!ronda.questions || ronda.questions.length === 0) {
@@ -61,7 +74,7 @@ export default function QuizGame({
     setRespondida(false);
     setElegida(null);
     setTerminado(false);
-    setTiempo(100);
+    setTiempo(tiempoInicial(timeLimit));
   }
 
   function responder(i: number) {
@@ -70,9 +83,9 @@ export default function QuizGame({
     setRespondida(true);
     const correcta = rondaActiva.questions[indice].correctIndex;
     if (i === correcta) {
-      const bonus = Math.round(tiempo / 2);
+      const bonus = calcularBonus(timeLimit, tiempo ?? 0);
       setPuntaje((p) => p + 100 + bonus);
-      setCorrectas((c) => c + 1); // NUEVO
+      setCorrectas((c) => c + 1);
     }
   }
 
@@ -82,7 +95,7 @@ export default function QuizGame({
       setIndice((n) => n + 1);
       setRespondida(false);
       setElegida(null);
-      setTiempo(100);
+      setTiempo(tiempoInicial(timeLimit));
     } else {
       setTerminado(true);
       guardarPuntaje();
@@ -91,7 +104,6 @@ export default function QuizGame({
 
   async function guardarPuntaje() {
     if (!rondaActiva) return;
-    // Enviar nota como score (aunque no la usamos, para no romper API)
     const nota = (correctas / rondaActiva.questions.length) * 10;
     try {
       await fetch("/api/guardar-puntaje", {
@@ -100,7 +112,7 @@ export default function QuizGame({
         body: JSON.stringify({
           quizId: null,
           roundId: rondaActiva.id,
-          score: Math.round(nota * 10), // entero de décimas
+          score: Math.round(nota * 10),
           totalQuestions: rondaActiva.questions.length,
           correctAnswers: correctas,
         }),
@@ -153,22 +165,22 @@ export default function QuizGame({
             {rondas.map((ronda) => {
               const sinPreguntas = !ronda.questions || ronda.questions.length === 0;
               return (
-              <button
-                key={ronda.id}
-                onClick={() => empezarRonda(ronda)}
-                disabled={sinPreguntas}
-                className="card card-link"
-                style={{ textAlign: "left", opacity: sinPreguntas ? 0.55 : 1, cursor: sinPreguntas ? "not-allowed" : "pointer" }}
-              >
-                <div className="row between" style={{ alignItems: "flex-start" }}>
-                  <div>
-                    <div className="card-icon" style={{ marginBottom: "0.75rem" }}>{ronda.icon}</div>
-                    <div className="h2" style={{ marginBottom: "0.3rem" }}>{ronda.name}</div>
-                    <div className="lead" style={{ fontSize: "0.95rem" }}>{ronda.description}</div>
+                <button
+                  key={ronda.id}
+                  onClick={() => empezarRonda(ronda)}
+                  disabled={sinPreguntas}
+                  className="card card-link"
+                  style={{ textAlign: "left", opacity: sinPreguntas ? 0.55 : 1, cursor: sinPreguntas ? "not-allowed" : "pointer" }}
+                >
+                  <div className="row between" style={{ alignItems: "flex-start" }}>
+                    <div>
+                      <div className="card-icon" style={{ marginBottom: "0.75rem" }}>{ronda.icon}</div>
+                      <div className="h2" style={{ marginBottom: "0.3rem" }}>{ronda.name}</div>
+                      <div className="lead" style={{ fontSize: "0.95rem" }}>{ronda.description}</div>
+                    </div>
+                    <span className="badge">{ronda.questions.length} preguntas</span>
                   </div>
-                  <span className="badge">{ronda.questions.length} preguntas</span>
-                </div>
-              </button>
+                </button>
               );
             })}
           </div>
@@ -209,8 +221,6 @@ export default function QuizGame({
   // PANTALLA 2: jugando
   const pregunta = rondaActiva.questions[indice];
 
-  // Guarda defensiva: si por algún motivo no hay pregunta en este índice,
-  // no reventamos el render (evita "This page couldn't load").
   if (!pregunta) {
     return (
       <>
@@ -235,14 +245,16 @@ export default function QuizGame({
         <div className="stack-sm" style={{ gap: "0.5rem" }}>
           <div className="row between muted">
             <span>Pregunta {indice + 1} de {rondaActiva.questions.length}</span>
-            {!respondida && <span className="icon-inline"><Clock size={14} /> {Math.round(tiempo)}</span>}
+            {!respondida && tiempo !== null && (
+              <span className="icon-inline"><Clock size={14} /> {tiempo}s</span>
+            )}
           </div>
           <div className="progress-track">
             <div className="progress-fill" style={{ width: `${progreso}%` }} />
           </div>
-          {!respondida && (
+          {!respondida && timeLimit !== null && tiempo !== null && (
             <div className="timebar" style={{ marginTop: "0.15rem" }}>
-              <div className="timebar-fill" style={{ width: `${tiempo}%` }} />
+              <div className="timebar-fill" style={{ width: `${(tiempo / timeLimit) * 100}%` }} />
             </div>
           )}
         </div>

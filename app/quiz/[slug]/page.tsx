@@ -62,6 +62,7 @@ export default async function QuizPage({
       quizTitle={quiz.title}
       rondas={rondasConPreguntas}
       studentName={studentName}
+      timeLimit={quiz.timeLimit ?? null}  // NUEVO
     />
   );
 }
