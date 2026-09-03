@@ -71,7 +71,7 @@ export default function BotonQR({ slug, titulo }: { slug: string; titulo: string
             left: 0,
             width: "100%",
             height: "100%",
-            background: "rgba(0,0,0,0.9)",
+            background: "#ffffff",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -81,23 +81,27 @@ export default function BotonQR({ slug, titulo }: { slug: string; titulo: string
         >
           <div
             style={{
-              background: "var(--card-bg)",
-              border: "1px solid var(--card-border)",
+              background: "#ffffff",
+              border: "1px solid #ddd",
               borderRadius: "12px",
-              padding: "1.5rem",
+              padding: "2rem",
               textAlign: "center",
               maxWidth: "90%",
-              boxShadow: "var(--shadow)",
+              boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 style={{ margin: "0 0 1rem", color: "var(--foreground)" }}>
+            <h3 style={{ margin: "0 0 1rem", color: "#000" }}>
               {titulo}
             </h3>
             <div ref={qrRef}>
               <QRCodeCanvas value={url} size={220} bgColor="#ffffff" fgColor="#000000" />
             </div>
-            <p style={{ marginTop: "1rem", color: "var(--text-secondary)", wordBreak: "break-all" }}>
+            <p style={{ marginTop: "1rem", color: "#333", wordBreak: "break-all" }}>
               {url}
             </p>
             <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
