@@ -9,6 +9,7 @@ export const quizzes = sqliteTable("quizzes", {
   icon: text("icon"),
   subject: text("subject"),
   level: text("level"),
+  timeLimit: integer("time_limit"), // NUEVO: segundos o null
   isPublished: integer("is_published", { mode: "boolean" }).default(false),
   createdAt: integer("created_at", { mode: "timestamp" }),
   updatedAt: integer("updated_at", { mode: "timestamp" }),

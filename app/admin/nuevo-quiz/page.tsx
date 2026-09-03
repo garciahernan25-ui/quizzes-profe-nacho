@@ -10,6 +10,7 @@ export default function NuevoQuiz() {
   const [icon, setIcon] = useState("");
   const [subject, setSubject] = useState("");
   const [level, setLevel] = useState("");
+  const [timeLimit, setTimeLimit] = useState<number | null>(null); // NUEVO
   const [mensaje, setMensaje] = useState("");
   const [guardando, setGuardando] = useState(false);
   const [rondaCreada, setRondaCreada] = useState("");
@@ -24,7 +25,7 @@ export default function NuevoQuiz() {
     const res = await fetch("/api/quizzes", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, description, icon, subject, level }),
+      body: JSON.stringify({ title, description, icon, subject, level, timeLimit }),
     });
     const data = await res.json();
     setGuardando(false);
@@ -82,6 +83,21 @@ export default function NuevoQuiz() {
           <div className="field">
             <label className="label">Nivel</label>
             <input className="input" value={level} onChange={(e) => setLevel(e.target.value)} placeholder="Ej: Secundaria" />
+          </div>
+          <div className="field">
+            <label className="label">Tiempo por pregunta</label>
+            <select
+              className="input"
+              value={timeLimit === null ? "" : String(timeLimit)}
+              onChange={(e) => setTimeLimit(e.target.value === "" ? null : Number(e.target.value))}
+            >
+              <option value="">Sin límite</option>
+              <option value="5">5 segundos</option>
+              <option value="10">10 segundos</option>
+              <option value="15">15 segundos</option>
+              <option value="20">20 segundos</option>
+              <option value="30">30 segundos</option>
+            </select>
           </div>
         </div>
 

@@ -28,14 +28,15 @@ export async function POST(request: Request) {
       icon: datos.icon || "📝",
       subject: datos.subject || null,
       level: datos.level || null,
+      timeLimit: datos.timeLimit || null, // NUEVO: guarda el tiempo en segundos
       isPublished: true,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
 
     // Crear una sección inicial para que puedas cargarle preguntas enseguida
-     const rondaId = uuid();
-      await db.insert(rounds).values({
+    const rondaId = uuid();
+    await db.insert(rounds).values({
       id: rondaId,
       quizId: quizId,
       name: "General",
@@ -44,7 +45,7 @@ export async function POST(request: Request) {
       order: 0,
     });
 
-  return NextResponse.json({ ok: true, slug, rondaId });
+    return NextResponse.json({ ok: true, slug, rondaId });
   } catch (error) {
     console.error("Error al crear el quiz:", error);
     return NextResponse.json({ ok: false, error: "No se pudo crear" }, { status: 500 });
