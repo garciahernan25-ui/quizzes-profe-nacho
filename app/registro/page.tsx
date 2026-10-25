@@ -1,43 +1,51 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Navbar from "../components/Navbar";
 import { Notice } from "../components/icons";
 
-const MODALIDADES = ["Secundaria", "Secundaria Técnica", "EPS", "Adulto CENS", "FinES", "Terciario"];
-const ANIOS = ["1ro", "2do", "3ro", "4to", "5to", "6to", "7mo"];
-const DIVISIONES = ["1ra", "2da", "3ra", "4ta", "5ta", "6ta", "A", "B", "C", "D", "E"];
-
-// Modalidades que usan año + división
-const CON_ANIO = ["Secundaria", "Secundaria Técnica", "Adulto CENS", "Terciario"];
+// Opciones que arma el admin en /admin/escuelas
+type Curso = { id: string; name: string };
+type Escuela = { id: string; name: string; cursos: Curso[] };
+type Modalidad = { id: string; name: string; escuelas: Escuela[] };
 
 export default function Registro() {
   const [fullName, setFullName] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [modality, setModality] = useState("");
-  const [school, setSchool] = useState("");
-  const [year, setYear] = useState("");
-  const [division, setDivision] = useState("");
-  const [extraInfo, setExtraInfo] = useState("");
+  const [opciones, setOpciones] = useState<Modalidad[] | null>(null);
+  const [modalidadId, setModalidadId] = useState("");
+  const [escuelaId, setEscuelaId] = useState("");
+  const [cursoId, setCursoId] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [guardando, setGuardando] = useState(false);
 
-  const usaAnio = CON_ANIO.includes(modality);
-  const usaExtra = modality === "EPS" || modality === "FinES";
+  useEffect(() => {
+    fetch("/api/opciones-registro")
+      .then((r) => r.json())
+      .then((data) => setOpciones(data))
+      .catch(() => setOpciones([]));
+  }, []);
+
+  // Cada lista muestra solo lo que corresponde a lo elegido en la anterior
+  const escuelas = opciones?.find((m) => m.id === modalidadId)?.escuelas ?? [];
+  const cursos = escuelas.find((e) => e.id === escuelaId)?.cursos ?? [];
+
+  function elegirModalidad(id: string) {
+    setModalidadId(id);
+    setEscuelaId("");
+    setCursoId("");
+  }
+
+  function elegirEscuela(id: string) {
+    setEscuelaId(id);
+    setCursoId("");
+  }
 
   async function registrar() {
-    if (!fullName || !username || !password || !modality || !school) {
+    if (!fullName || !username || !password || !cursoId) {
       setMensaje("Completá todos los datos.");
-      return;
-    }
-    if (usaAnio && (!year || !division)) {
-      setMensaje("Completá año y división.");
-      return;
-    }
-    if (usaExtra && !extraInfo) {
-      setMensaje(`Completá cuál ${modality} es.`);
       return;
     }
     setGuardando(true);
@@ -45,16 +53,7 @@ export default function Registro() {
     const res = await fetch("/api/registro", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        fullName,
-        username,
-        password,
-        modality,
-        school,
-        year: usaAnio ? year : null,
-        division: usaAnio ? division : null,
-        extraInfo: usaExtra ? extraInfo : null,
-      }),
+      body: JSON.stringify({ fullName, username, password, courseId: cursoId }),
     });
     const data = await res.json();
     setGuardando(false);
@@ -96,48 +95,44 @@ export default function Registro() {
             <input className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
 
-          <div className="field">
-            <label className="label">Modalidad</label>
-            <select className="select" value={modality} onChange={(e) => setModality(e.target.value)}>
-              <option value="">Elegí una...</option>
-              {MODALIDADES.map((m) => <option key={m} value={m}>{m}</option>)}
-            </select>
-          </div>
-
-          <div className="field">
-            <label className="label">Escuela</label>
-            <input className="input" value={school} onChange={(e) => setSchool(e.target.value)} placeholder="Nombre de la escuela" />
-          </div>
-
-          {usaAnio && (
+          {opciones === null ? (
+            <p className="muted">Cargando escuelas...</p>
+          ) : opciones.length === 0 ? (
+            <p className="notice notice-error">Todavía no hay cursos cargados. Avisale a tu profe.</p>
+          ) : (
             <>
               <div className="field">
-                <label className="label">Año</label>
-                <select className="select" value={year} onChange={(e) => setYear(e.target.value)}>
-                  <option value="">Elegí...</option>
-                  {ANIOS.map((a) => <option key={a} value={a}>{a}</option>)}
+                <label className="label">Modalidad</label>
+                <select className="select" value={modalidadId} onChange={(e) => elegirModalidad(e.target.value)}>
+                  <option value="">Elegí una...</option>
+                  {opciones.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
                 </select>
               </div>
 
-              <div className="field">
-                <label className="label">División</label>
-                <select className="select" value={division} onChange={(e) => setDivision(e.target.value)}>
-                  <option value="">Elegí...</option>
-                  {DIVISIONES.map((d) => <option key={d} value={d}>{d}</option>)}
-                </select>
-              </div>
+              {modalidadId && (
+                <div className="field">
+                  <label className="label">Escuela</label>
+                  <select className="select" value={escuelaId} onChange={(e) => elegirEscuela(e.target.value)}>
+                    <option value="">Elegí tu escuela...</option>
+                    {escuelas.map((e) => <option key={e.id} value={e.id}>{e.name}</option>)}
+                  </select>
+                </div>
+              )}
+
+              {escuelaId && (
+                <div className="field">
+                  <label className="label">Curso</label>
+                  <select className="select" value={cursoId} onChange={(e) => setCursoId(e.target.value)}>
+                    <option value="">Elegí tu curso...</option>
+                    {cursos.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                </div>
+              )}
             </>
-          )}
-
-          {usaExtra && (
-            <div className="field">
-              <label className="label">¿Cuál {modality} es?</label>
-              <input className="input" value={extraInfo} onChange={(e) => setExtraInfo(e.target.value)} placeholder={`Nombre o número de ${modality}`} />
-            </div>
           )}
         </div>
 
-        <button onClick={registrar} disabled={guardando} className="btn btn-primary btn-lg btn-block">
+        <button onClick={registrar} disabled={guardando || !opciones?.length} className="btn btn-primary btn-lg btn-block">
           {guardando ? "Creando..." : "Crear cuenta"}
         </button>
 
