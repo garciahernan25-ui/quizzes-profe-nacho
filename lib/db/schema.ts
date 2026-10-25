@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 // Tabla de quizzes (cada quiz agrupa varias rondas)
 export const quizzes = sqliteTable("quizzes", {
@@ -50,15 +50,52 @@ export const scores = sqliteTable("scores", {
   playedAt: integer("played_at", { mode: "timestamp" }),
 });
 
+// Modalidades (Secundaria, Adulto CENS, FinES...). Las crea el admin.
+export const modalities = sqliteTable("modalities", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  isActive: integer("is_active", { mode: "boolean" }).notNull().default(true), // false = oculta en el registro
+  createdAt: integer("created_at", { mode: "timestamp" }),
+});
+
+// Escuelas: cada una pertenece a UNA modalidad
+export const schools = sqliteTable(
+  "schools",
+  {
+    id: text("id").primaryKey(),
+    modalityId: text("modality_id").notNull().references(() => modalities.id, { onDelete: "restrict" }),
+    name: text("name").notNull(),
+    isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
+    createdAt: integer("created_at", { mode: "timestamp" }),
+  },
+  (t) => [uniqueIndex("schools_modality_name_unique").on(t.modalityId, t.name)]
+);
+
+// Cursos: cada uno pertenece a UNA escuela. El nombre lo elige el admin ("1ro A", "Comisión 2")
+export const courses = sqliteTable(
+  "courses",
+  {
+    id: text("id").primaryKey(),
+    schoolId: text("school_id").notNull().references(() => schools.id, { onDelete: "restrict" }),
+    name: text("name").notNull(),
+    isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
+    createdAt: integer("created_at", { mode: "timestamp" }),
+  },
+  (t) => [uniqueIndex("courses_school_name_unique").on(t.schoolId, t.name)]
+);
+
 export const students = sqliteTable("students", {
   id: text("id").primaryKey(),
   fullName: text("full_name").notNull(),
   username: text("username").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
+  // Texto que escribió el alumno al registrarse. Se conserva como referencia.
   modality: text("modality").notNull(),
   school: text("school").notNull(),
   year: text("year"),
   division: text("division"),
   extraInfo: text("extra_info"),
+  // Curso asignado (null = todavía sin asignar)
+  courseId: text("course_id").references(() => courses.id, { onDelete: "restrict" }),
   createdAt: integer("created_at", { mode: "timestamp" }),
 });

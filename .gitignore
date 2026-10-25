@@ -47,5 +47,8 @@ local.db
 # auditoría de diseño (screenshots locales)
 .design-audit/
 
+# respaldos de la base (tienen datos de alumnos)
+/backups/
+
 # migraciones drizzle generadas localmente
 /drizzle/
