@@ -1,21 +1,11 @@
 import { db } from "./db";
 import { modalities, schools, courses, students } from "./db/schema";
 import { eq } from "drizzle-orm";
+import { normalizar } from "./texto";
 
 export type Tipo = "modalidad" | "escuela" | "curso";
 
 export const TIPOS: Tipo[] = ["modalidad", "escuela", "curso"];
-
-// Para comparar nombres sin que importen mayúsculas, tildes ni espacios de más:
-// "Escuela  N°5" y "escuela n°5" cuentan como el mismo nombre.
-export function normalizar(texto: string) {
-  return texto
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "")
-    .toLowerCase()
-    .replace(/\s+/g, " ")
-    .trim();
-}
 
 // Limpia el nombre que escribió el admin (saca espacios de más)
 export function limpiarNombre(texto: unknown) {
