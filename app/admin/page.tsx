@@ -47,6 +47,7 @@ export default async function AdminPage() {
           <Link href="/admin/nueva-seccion" className="btn btn-ghost"><Plus size={17} /> Nueva sección</Link>
           <Link href="/admin/preguntas" className="btn btn-ghost">Gestionar preguntas</Link>
           <Link href="/admin/seguimiento" className="btn btn-ghost"><ChartBar size={16} /> Seguimiento de alumnos</Link>
+          <Link href="/admin/escuelas" className="btn btn-ghost">Escuelas y cursos</Link>
         </div>
 
         {filas.length === 0 ? (
