@@ -2,8 +2,11 @@ export const dynamic = "force-dynamic";
 import { db } from "../../../lib/db";
 import { students, scores } from "../../../lib/db/schema";
 import { NextResponse } from "next/server";
+import { esAdmin, noAutorizado } from "../../../lib/adminAuth";
 
 export async function GET() {
+  if (!(await esAdmin())) return noAutorizado();
+
   try {
     const alumnos = await db.select().from(students);
     const todosPuntajes = await db.select().from(scores);

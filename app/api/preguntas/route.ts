@@ -4,8 +4,11 @@ import { questions } from "../../../lib/db/schema";
 import { eq } from "drizzle-orm";
 import { v4 as uuid } from "uuid";
 import { NextResponse } from "next/server";
+import { esAdmin, noAutorizado } from "../../../lib/adminAuth";
 
 export async function POST(request: Request) {
+  if (!(await esAdmin())) return noAutorizado();
+
   try {
     const datos = await request.json();
 
