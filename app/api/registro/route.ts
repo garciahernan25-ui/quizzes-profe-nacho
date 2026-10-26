@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 import { db } from "../../../lib/db";
-import { students } from "../../../lib/db/schema";
+import { students, modalities, schools, courses } from "../../../lib/db/schema";
 import { eq } from "drizzle-orm";
 import { v4 as uuid } from "uuid";
 import bcrypt from "bcryptjs";
@@ -9,6 +9,24 @@ import { NextResponse } from "next/server";
 export async function POST(request: Request) {
   try {
     const datos = await request.json();
+
+    if (!datos.fullName || !datos.username || !datos.password || !datos.courseId) {
+      return NextResponse.json({ ok: false, error: "Completá todos los datos." }, { status: 400 });
+    }
+
+    // El curso tiene que existir y estar visible (igual que su escuela y su modalidad)
+    const elegido = (
+      await db
+        .select({ curso: courses, escuela: schools, modalidad: modalities })
+        .from(courses)
+        .innerJoin(schools, eq(courses.schoolId, schools.id))
+        .innerJoin(modalities, eq(schools.modalityId, modalities.id))
+        .where(eq(courses.id, datos.courseId))
+    )[0];
+
+    if (!elegido || !elegido.curso.isActive || !elegido.escuela.isActive || !elegido.modalidad.isActive) {
+      return NextResponse.json({ ok: false, error: "Ese curso no está disponible. Elegilo de nuevo." }, { status: 400 });
+    }
 
     // Chequear que el usuario no exista ya
     const existente = await db
@@ -31,11 +49,10 @@ export async function POST(request: Request) {
       fullName: datos.fullName,
       username: datos.username,
       passwordHash: passwordHash,
-      modality: datos.modality,
-      school: datos.school,
-      year: datos.year || null,
-      division: datos.division || null,
-      extraInfo: datos.extraInfo || null,
+      // Se guardan también los nombres como texto, igual que en los registros viejos
+      modality: elegido.modalidad.name,
+      school: elegido.escuela.name,
+      courseId: elegido.curso.id,
       createdAt: new Date(),
     });
 

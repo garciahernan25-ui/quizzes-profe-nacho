@@ -3,6 +3,7 @@ import { db } from "../../../lib/db";
 import { quizzes, rounds } from "../../../lib/db/schema";
 import { v4 as uuid } from "uuid";
 import { NextResponse } from "next/server";
+import { esAdmin, noAutorizado } from "../../../lib/adminAuth";
 
 // Convierte "Tabla Periódica" en "tabla-periodica" para el enlace
 function hacerSlug(texto: string): string {
@@ -15,6 +16,8 @@ function hacerSlug(texto: string): string {
 }
 
 export async function POST(request: Request) {
+  if (!(await esAdmin())) return noAutorizado();
+
   try {
     const datos = await request.json();
     const quizId = uuid();

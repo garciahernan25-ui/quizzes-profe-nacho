@@ -4,8 +4,11 @@ import { db } from "../../../../lib/db";
 import { students } from "../../../../lib/db/schema";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
+import { esAdmin, noAutorizado } from "../../../../lib/adminAuth";
 
 export async function POST(request: Request) {
+  if (!(await esAdmin())) return noAutorizado();
+
   try {
     const { id } = await request.json();
 

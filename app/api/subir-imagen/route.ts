@@ -1,8 +1,11 @@
 export const dynamic = "force-dynamic";
 import { put } from "@vercel/blob";
 import { NextResponse } from "next/server";
+import { esAdmin, noAutorizado } from "../../../lib/adminAuth";
 
 export async function POST(request: Request) {
+  if (!(await esAdmin())) return noAutorizado();
+
   try {
     const formData = await request.formData();
     const archivo = formData.get("archivo") as File;

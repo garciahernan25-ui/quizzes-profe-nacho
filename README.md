@@ -37,7 +37,7 @@ Los quizzes son públicos y se puede entrar sin cuenta para probarlos. El regist
 ![Quiz en curso](docs/quiz.png)
 
 - Acceso a quizzes públicos por enlace directo o código QR.
-- Registro y login según modalidad educativa (Secundaria, Secundaria Técnica, EPS, Adulto CENS, FinES y Terciario).
+- Registro eligiendo modalidad, escuela y curso de listas que arma el docente (sin escribir a mano).
 - Preguntas y opciones con imágenes, y explicación al responder cada una.
 - Temporizador configurable por pregunta (5, 10, 15, 20, 30 segundos o sin límite).
 - Puntaje final en escala de 0 a 10 con el detalle de respuestas correctas.
@@ -53,7 +53,9 @@ Los quizzes son públicos y se puede entrar sin cuenta para probarlos. El regist
 - Carga de preguntas con imágenes en el enunciado y en cada opción, incluida la edición de esas imágenes.
 - Configuración del tiempo por pregunta.
 - Generación y descarga del código QR de cada quiz en PDF, listo para imprimir.
-- Panel de seguimiento de alumnos agrupados por modalidad, escuela, año y división, con promedios en escala 0 a 10.
+- Alta, edición, ocultamiento y baja de modalidades, escuelas y cursos.
+- Panel de seguimiento por curso, con el promedio general y el de cada quiz en escala 0 a 10.
+- Asignación de alumnos a su curso (útil para corregir registros viejos), sin perder sus notas.
 
 ![Seguimiento de alumnos](docs/seguimiento.png)
 
@@ -97,7 +99,7 @@ npm install
 
 # 3. Crear el archivo .env.local con las variables de abajo
 
-# 4. Aplicar el esquema a la base de datos
+# 4. Aplicar el esquema a una base de datos NUEVA (vacía)
 npx drizzle-kit push
 
 # 5. Levantar el servidor de desarrollo
@@ -105,6 +107,21 @@ npm run dev
 ```
 
 La app queda corriendo en `http://localhost:3000`.
+
+### Cambios en la base de producción
+
+No usar `drizzle-kit push` sobre la base de producción. Los cambios se escriben como SQL en `scripts/sql/` y se aplican así:
+
+```bash
+# 1. Respaldo (solo lectura; queda en /backups, que no se sube a git)
+npx dotenv -e .env.local -- npx tsx scripts/respaldo.ts
+
+# 2. Ver qué se va a aplicar (no toca nada)
+npx dotenv -e .env.local -- npx tsx scripts/aplicar-sql.ts scripts/sql/ARCHIVO.sql
+
+# 3. Aplicar (todo junto, o nada si algo falla)
+npx dotenv -e .env.local -- npx tsx scripts/aplicar-sql.ts scripts/sql/ARCHIVO.sql --confirmar
+```
 
 ### Variables de entorno
 
