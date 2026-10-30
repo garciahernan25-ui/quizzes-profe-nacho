@@ -8,7 +8,7 @@ import BotonQR from "./BotonQR";
 import BotonSalir from "./BotonSalir";
 import BotonBorrarQuiz from "./BotonBorrarQuiz";
 import Navbar from "../components/Navbar";
-import { Plus, ChartBar } from "../components/icons";
+import { Plus, ChartBar, Trophy } from "../components/icons";
 
 export default async function AdminPage() {
   const listaQuizzes = await db.select().from(quizzes);
@@ -48,6 +48,7 @@ export default async function AdminPage() {
           <Link href="/admin/preguntas" className="btn btn-ghost">Gestionar preguntas</Link>
           <Link href="/admin/seguimiento" className="btn btn-ghost"><ChartBar size={16} /> Seguimiento de alumnos</Link>
           <Link href="/admin/escuelas" className="btn btn-ghost">Escuelas y cursos</Link>
+          <Link href="/admin/ranking" className="btn btn-ghost"><Trophy size={16} /> Ranking en vivo</Link>
         </div>
 
         {filas.length === 0 ? (
@@ -62,7 +63,7 @@ export default async function AdminPage() {
                   <h2 className="h2" style={{ wordBreak: "break-word" }}>{fila.title}</h2>
                   <span className={`badge ${fila.publicado ? "badge-success" : "badge-muted"}`}>
                     <span className="dot" style={{ background: fila.publicado ? "var(--success)" : "var(--text-muted)" }} />
-                    {fila.publicado ? "Publicado" : "Borrador"}
+                    {fila.publicado ? "Abierto sin cuenta" : "Solo con cuenta"}
                   </span>
                 </div>
 
@@ -75,7 +76,7 @@ export default async function AdminPage() {
                   <BotonCopiar slug={fila.slug} />
                   <BotonQR slug={fila.slug} titulo={fila.title} />
                   <Link href={`/admin/quiz/${fila.id}`} className="btn btn-ghost btn-sm">
-                    Ver preguntas
+                    Preguntas y cursos
                   </Link>
                   <BotonBorrarQuiz quizId={fila.id} titulo={fila.title} />
                 </div>

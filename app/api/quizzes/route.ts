@@ -32,7 +32,8 @@ export async function POST(request: Request) {
       subject: datos.subject || null,
       level: datos.level || null,
       timeLimit: datos.timeLimit || null, // NUEVO: guarda el tiempo en segundos
-      isPublished: true,
+      // Arranca cerrado: sin cuenta no se ve, y el admin elige qué cursos lo hacen
+      isPublished: false,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
