@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, uniqueIndex, primaryKey } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, real, index, uniqueIndex, primaryKey } from "drizzle-orm/sqlite-core";
 
 // Tabla de quizzes (cada quiz agrupa varias rondas)
 export const quizzes = sqliteTable("quizzes", {
@@ -86,21 +86,28 @@ export const courses = sqliteTable(
   (t) => [uniqueIndex("courses_school_name_unique").on(t.schoolId, t.name)]
 );
 
-export const students = sqliteTable("students", {
-  id: text("id").primaryKey(),
-  fullName: text("full_name").notNull(),
-  username: text("username").notNull().unique(),
-  passwordHash: text("password_hash").notNull(),
-  // Texto que escribió el alumno al registrarse. Se conserva como referencia.
-  modality: text("modality").notNull(),
-  school: text("school").notNull(),
-  year: text("year"),
-  division: text("division"),
-  extraInfo: text("extra_info"),
-  // Curso asignado (null = todavía sin asignar)
-  courseId: text("course_id").references(() => courses.id, { onDelete: "restrict" }),
-  createdAt: integer("created_at", { mode: "timestamp" }),
-});
+export const students = sqliteTable(
+  "students",
+  {
+    id: text("id").primaryKey(),
+    fullName: text("full_name").notNull(),
+    username: text("username").notNull().unique(),
+    passwordHash: text("password_hash").notNull(),
+    // Texto que escribió el alumno al registrarse. Se conserva como referencia.
+    modality: text("modality").notNull(),
+    school: text("school").notNull(),
+    year: text("year"),
+    division: text("division"),
+    extraInfo: text("extra_info"),
+    // Curso asignado (null = todavía sin asignar)
+    courseId: text("course_id").references(() => courses.id, { onDelete: "restrict" }),
+    createdAt: integer("created_at", { mode: "timestamp" }),
+    // "pendiente" = recién registrado, espera que el profe lo apruebe. "bloqueado" = no puede jugar.
+    // El valor por defecto es "aprobado": así quedan los alumnos viejos y los que registre la versión anterior.
+    status: text("status", { enum: ["pendiente", "aprobado", "bloqueado"] }).notNull().default("aprobado"),
+  },
+  (t) => [index("students_status_idx").on(t.status)]
+);
 
 // Qué cursos pueden hacer cada quiz (si un curso no está acá, sus alumnos no ven el quiz)
 export const quizCourses = sqliteTable(
@@ -155,3 +162,19 @@ export const extraAttempts = sqliteTable("extra_attempts", {
   quizId: text("quiz_id").notNull().references(() => quizzes.id, { onDelete: "cascade" }),
   grantedAt: integer("granted_at", { mode: "timestamp_ms" }).notNull(),
 });
+
+// Registro de notas cambiadas a mano por el admin. Cada cambio es una fila nueva (no se pisa nada).
+// La que vale es la última: si su grade es null, el admin quitó la edición y vuelve a contar la de los intentos.
+export const gradeEdits = sqliteTable(
+  "grade_edits",
+  {
+    id: text("id").primaryKey(),
+    studentId: text("student_id").notNull().references(() => students.id, { onDelete: "cascade" }),
+    quizId: text("quiz_id").notNull().references(() => quizzes.id, { onDelete: "cascade" }),
+    grade: real("grade"), // nota nueva de 0 a 10 (null = se quitó la edición)
+    previousGrade: real("previous_grade"), // la nota que contaba justo antes del cambio
+    editedBy: text("edited_by").notNull(),
+    editedAt: integer("edited_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (t) => [index("grade_edits_student_quiz_idx").on(t.studentId, t.quizId)]
+);

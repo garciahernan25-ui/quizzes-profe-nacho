@@ -8,6 +8,7 @@ import * as schema from "../lib/db/schema";
 import { pasosDelArchivo } from "../scripts/pasos-sql";
 import type { DB } from "../lib/intentos";
 
+// antesDeLaEtapa3 carga datos "de producción" antes de aplicar 0003 y 0004, para probar las migraciones
 export async function crearBase(antesDeLaEtapa3?: (client: Client) => Promise<void>) {
   const carpeta = mkdtempSync(join(tmpdir(), "quizzes-test-"));
   const client = createClient({ url: `file:${join(carpeta, "test.db").replace(/\\/g, "/")}` });
@@ -18,6 +19,7 @@ export async function crearBase(antesDeLaEtapa3?: (client: Client) => Promise<vo
   await client.batch(pasosDelArchivo("scripts/sql/0002_escuelas_cursos.sql"), "write");
   if (antesDeLaEtapa3) await antesDeLaEtapa3(client);
   await client.batch(pasosDelArchivo("scripts/sql/0003_intentos_cursos.sql"), "write");
+  await client.batch(pasosDelArchivo("scripts/sql/0004_aprobacion_notas.sql"), "write");
 
   const db = drizzle(client, { schema }) as unknown as DB;
   return {
