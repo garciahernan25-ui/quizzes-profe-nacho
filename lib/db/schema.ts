@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, uniqueIndex, primaryKey } from "drizzle-orm/sqlite-core";
 
 // Tabla de quizzes (cada quiz agrupa varias rondas)
 export const quizzes = sqliteTable("quizzes", {
@@ -48,6 +48,8 @@ export const scores = sqliteTable("scores", {
   totalQuestions: integer("total_questions").notNull(),
   correctAnswers: integer("correct_answers").notNull(),
   playedAt: integer("played_at", { mode: "timestamp" }),
+  // Intento del que salió esta nota (null = nota del sistema anterior, por sección)
+  attemptId: text("attempt_id"),
 });
 
 // Modalidades (Secundaria, Adulto CENS, FinES...). Las crea el admin.
@@ -98,4 +100,58 @@ export const students = sqliteTable("students", {
   // Curso asignado (null = todavía sin asignar)
   courseId: text("course_id").references(() => courses.id, { onDelete: "restrict" }),
   createdAt: integer("created_at", { mode: "timestamp" }),
+});
+
+// Qué cursos pueden hacer cada quiz (si un curso no está acá, sus alumnos no ven el quiz)
+export const quizCourses = sqliteTable(
+  "quiz_courses",
+  {
+    quizId: text("quiz_id").notNull().references(() => quizzes.id, { onDelete: "cascade" }),
+    courseId: text("course_id").notNull().references(() => courses.id, { onDelete: "cascade" }),
+  },
+  (t) => [primaryKey({ columns: [t.quizId, t.courseId] })]
+);
+
+// Cada vez que un alumno hace un quiz. El servidor lleva la pregunta actual y la hora
+// en que se la mostró, para medir el tiempo sin depender del navegador.
+export const attempts = sqliteTable(
+  "attempts",
+  {
+    id: text("id").primaryKey(),
+    studentId: text("student_id").notNull().references(() => students.id, { onDelete: "cascade" }),
+    quizId: text("quiz_id").notNull().references(() => quizzes.id, { onDelete: "cascade" }),
+    number: integer("number").notNull(), // 1 = primer intento, 2 = segundo...
+    questionIds: text("question_ids").notNull(), // JSON con el orden de las preguntas al empezar
+    currentIndex: integer("current_index").notNull().default(0),
+    shownAtMs: integer("shown_at_ms"), // cuándo se mostró la pregunta actual; null = ya la respondió
+    startedAt: integer("started_at", { mode: "timestamp_ms" }).notNull(),
+    finishedAt: integer("finished_at", { mode: "timestamp_ms" }),
+  },
+  // Evita que dos pestañas abiertas a la vez creen dos intentos
+  (t) => [uniqueIndex("attempts_student_quiz_number_unique").on(t.studentId, t.quizId, t.number)]
+);
+
+// Cada respuesta de un intento. chosenIndex null = se le acabó el tiempo.
+export const attemptAnswers = sqliteTable(
+  "attempt_answers",
+  {
+    id: text("id").primaryKey(),
+    attemptId: text("attempt_id").notNull().references(() => attempts.id, { onDelete: "cascade" }),
+    questionId: text("question_id").notNull(),
+    chosenIndex: integer("chosen_index"),
+    isCorrect: integer("is_correct", { mode: "boolean" }).notNull(),
+    elapsedMs: integer("elapsed_ms").notNull(),
+    points: integer("points").notNull(), // puntos del ranking (no cambian la nota)
+    answeredAt: integer("answered_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  // Una sola respuesta por pregunta en cada intento
+  (t) => [uniqueIndex("attempt_answers_attempt_question_unique").on(t.attemptId, t.questionId)]
+);
+
+// Intentos extra que habilitó el admin (cada fila = un intento más)
+export const extraAttempts = sqliteTable("extra_attempts", {
+  id: text("id").primaryKey(),
+  studentId: text("student_id").notNull().references(() => students.id, { onDelete: "cascade" }),
+  quizId: text("quiz_id").notNull().references(() => quizzes.id, { onDelete: "cascade" }),
+  grantedAt: integer("granted_at", { mode: "timestamp_ms" }).notNull(),
 });
