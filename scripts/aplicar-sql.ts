@@ -3,17 +3,14 @@
 // Sin --confirmar solo muestra lo que haría (no toca nada).
 // Uso: npx dotenv -e .env.local -- npx tsx scripts/aplicar-sql.ts scripts/sql/0002_escuelas_cursos.sql --confirmar
 import { createClient } from "@libsql/client";
-import { readFileSync } from "fs";
+import { pasosDelArchivo } from "./pasos-sql";
 
 async function aplicar() {
   const archivo = process.argv[2];
   const confirmar = process.argv.includes("--confirmar");
   if (!archivo) throw new Error("Falta el archivo .sql");
 
-  const pasos = readFileSync(archivo, "utf8")
-    .split("--> statement-breakpoint")
-    .map((p) => p.replace(/^\s*--.*$/gm, "").trim()) // saco los comentarios
-    .filter((p) => p.length > 0);
+  const pasos = pasosDelArchivo(archivo);
 
   const url = process.env.TURSO_DATABASE_URL!;
   console.log(`Base: ${url.replace(/\/\/.*@/, "//***@")}`);

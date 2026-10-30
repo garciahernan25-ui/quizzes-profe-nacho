@@ -1,8 +1,13 @@
+export const dynamic = "force-dynamic";
 import { db } from "../../../lib/db";
-import { quizzes, rounds, questions } from "../../../lib/db/schema";
+import { quizzes } from "../../../lib/db/schema";
 import { eq } from "drizzle-orm";
 import { cookies } from "next/headers";
-import QuizGame from "./QuizGame";
+import Link from "next/link";
+import Navbar from "../../components/Navbar";
+import Juego from "./Juego";
+import { alumnoLogueado } from "../../../lib/estudiante";
+import { preguntasDelQuiz, verificarAcceso } from "../../../lib/intentos";
 
 export default async function QuizPage({
   params,
@@ -11,58 +16,85 @@ export default async function QuizPage({
 }) {
   const { slug } = await params;
 
-  // Leer cookie de sesión del estudiante
   const cookieStore = await cookies();
   const studentName = cookieStore.get("student_name")?.value || null;
+  const studentId = await alumnoLogueado();
 
   const quiz = (await db.select().from(quizzes).where(eq(quizzes.slug, slug)))[0];
 
   if (!quiz) {
+    return <Aviso titulo="Quiz no encontrado" />;
+  }
+
+  // Con cuenta: el servidor decide si puede jugar (curso habilitado, un solo intento)
+  const acceso = studentId ? await verificarAcceso(db, studentId, quiz.id) : null;
+
+  if (acceso && acceso.tipo !== "sin-cuenta") {
+    if (acceso.tipo === "sin-curso") {
+      return <Aviso titulo="Todavía no tenés curso asignado" texto="Pedile al profe que te asigne a tu curso para poder hacer los quizzes." />;
+    }
+    if (acceso.tipo === "no-habilitado") {
+      return <Aviso titulo="Este quiz no está habilitado para tu curso" texto="Si creés que es un error, avisale al profe." />;
+    }
+    if (acceso.tipo === "ya-respondio") {
+      return (
+        <Aviso
+          titulo="Ya respondiste este quiz"
+          texto={acceso.nota !== null ? `Tu nota: ${acceso.nota.toFixed(1)} / 10` : "Tu resultado ya está guardado."}
+        />
+      );
+    }
     return (
-      <main style={{ padding: "3rem", textAlign: "center" }}>
-        <h1>Quiz no encontrado</h1>
-        <a href="/">Volver al inicio</a>
-      </main>
+      <Juego
+        quizTitle={quiz.title}
+        studentName={studentName}
+        modo={{ tipo: "cuenta", quizId: quiz.id }}
+        timeLimit={quiz.timeLimit ?? null}
+      />
     );
   }
 
-  const rondas = await db.select().from(rounds).where(eq(rounds.quizId, quiz.id));
+  // Sin cuenta: solo los quizzes abiertos (feria). No se guarda nada.
+  if (!quiz.isPublished) {
+    return (
+      <Aviso titulo="Este quiz es para alumnos con cuenta" texto="Ingresá con tu usuario para hacerlo.">
+        <Link href="/ingresar" className="btn btn-primary btn-lg" style={{ alignSelf: "center" }}>Ingresar</Link>
+      </Aviso>
+    );
+  }
 
-  const rondasConPreguntas = await Promise.all(
-    rondas.map(async (ronda) => {
-      const preguntas = await db
-        .select()
-        .from(questions)
-        .where(eq(questions.roundId, ronda.id));
-      return {
-        id: ronda.id,
-        name: ronda.name,
-        icon: ronda.icon,
-        description: ronda.description,
-        order: ronda.order ?? 0,
-        questions: preguntas
-          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-          .map((p) => ({
-            id: p.id,
-            question: p.question,
-            questionImage: p.questionImage,
-            options: JSON.parse(p.options) as string[],
-            optionImages: p.optionImages ? (JSON.parse(p.optionImages) as string[]) : null,
-            correctIndex: p.correctIndex,
-            explanation: p.explanation,
-          })),
-      };
-    })
-  );
-
-  rondasConPreguntas.sort((a, b) => a.order - b.order);
+  const preguntas = (await preguntasDelQuiz(db, quiz.id)).map(({ pregunta: p, seccion }) => ({
+    seccion,
+    question: p.question,
+    questionImage: p.questionImage,
+    options: JSON.parse(p.options) as string[],
+    optionImages: p.optionImages ? (JSON.parse(p.optionImages) as string[]) : null,
+    correctIndex: p.correctIndex,
+    explanation: p.explanation,
+  }));
 
   return (
-    <QuizGame
+    <Juego
       quizTitle={quiz.title}
-      rondas={rondasConPreguntas}
-      studentName={studentName}
-      timeLimit={quiz.timeLimit ?? null}  // NUEVO
+      studentName={null}
+      modo={{ tipo: "libre", preguntas }}
+      timeLimit={quiz.timeLimit ?? null}
     />
+  );
+}
+
+function Aviso({ titulo, texto, children }: { titulo: string; texto?: string; children?: React.ReactNode }) {
+  return (
+    <>
+      <Navbar back={{ href: "/", label: "Volver" }} />
+      <main className="page page-narrow animate-in" style={{ paddingTop: "clamp(2rem, 8vh, 5rem)" }}>
+        <div className="card card-pad-lg stack-md" style={{ textAlign: "center" }}>
+          <h1 className="h2">{titulo}</h1>
+          {texto && <p className="lead">{texto}</p>}
+          {children}
+          <Link href="/" className="btn btn-ghost" style={{ alignSelf: "center" }}>Volver al inicio</Link>
+        </div>
+      </main>
+    </>
   );
 }

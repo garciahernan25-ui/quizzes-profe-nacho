@@ -36,11 +36,13 @@ Los quizzes son públicos y se puede entrar sin cuenta para probarlos. El regist
 
 ![Quiz en curso](docs/quiz.png)
 
-- Acceso a quizzes públicos por enlace directo o código QR.
+- Acceso a los quizzes de su curso por enlace directo o código QR.
+- Un solo intento por quiz, controlado en el servidor. Si se corta internet, retoma donde quedó.
 - Registro eligiendo modalidad, escuela y curso de listas que arma el docente (sin escribir a mano).
 - Preguntas y opciones con imágenes, y explicación al responder cada una.
 - Temporizador configurable por pregunta (5, 10, 15, 20, 30 segundos o sin límite).
-- Puntaje final en escala de 0 a 10 con el detalle de respuestas correctas.
+- Nota final en escala de 0 a 10 (solo cuentan las respuestas correctas) y puntos con bonus por rapidez para el ranking.
+- Modo sin cuenta para los quizzes que el docente abre al público (ferias de ciencia), sin guardar resultados.
 - Historial de resultados y promedios para quienes tienen cuenta.
 - Interfaz responsive y modo oscuro automático.
 
@@ -56,6 +58,10 @@ Los quizzes son públicos y se puede entrar sin cuenta para probarlos. El regist
 - Alta, edición, ocultamiento y baja de modalidades, escuelas y cursos.
 - Panel de seguimiento por curso, con el promedio general y el de cada quiz en escala 0 a 10.
 - Asignación de alumnos a su curso (útil para corregir registros viejos), sin perder sus notas.
+- Habilitación de cada quiz por curso, y opción de abrirlo sin cuenta.
+- Ficha de cada alumno con nota, puntos, fecha y duración de cada quiz, con búsqueda por nombre, escuela y curso.
+- Habilitar otro intento (cuenta la mejor nota) o borrar la nota de un alumno en un quiz.
+- Ranking en vivo para proyectar en el aula, que se actualiza cada 3 segundos.
 
 ![Seguimiento de alumnos](docs/seguimiento.png)
 
@@ -81,7 +87,8 @@ Los quizzes son públicos y se puede entrar sin cuenta para probarlos. El regist
 - **Carga y gestión de imágenes** en preguntas y opciones usando Vercel Blob, incluida la sustitución de imágenes al editar.
 - **Generación de códigos QR descargables en PDF** con qrcode.react y jsPDF, para llevar los quizzes del entorno digital al aula física.
 - **Autenticación con distintas modalidades de usuario** y panel de administración protegido.
-- **Pruebas unitarias con Vitest** sobre la lógica de cálculo de notas.
+- **Tiempo medido en el servidor**: el navegador del alumno nunca recibe la respuesta correcta antes de responder, y el servidor decide si llegó a tiempo.
+- **Pruebas con Vitest** sobre el cálculo de notas y puntos, la regla de un intento, habilitar y borrar intentos y el ranking, contra una base de prueba armada con los mismos scripts SQL que producción.
 
 ![Pruebas unitarias con Vitest](docs/tests.png)
 
@@ -138,8 +145,10 @@ AUTH_SECRET=
 ## Tests
 
 ```bash
-npx vitest run
+npm test
 ```
+
+Los tests usan una base temporal propia: no necesitan `.env.local` ni tocan la base real.
 
 ## Autor
 

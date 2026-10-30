@@ -54,6 +54,8 @@ export default function PreguntasDelQuiz() {
         </Link>
       </div>
 
+      <QuienPuedeHacerlo quizId={quizId} />
+
       {cargando ? (
         <p className="lead">Cargando...</p>
       ) : preguntas.length === 0 ? (
@@ -80,5 +82,75 @@ export default function PreguntasDelQuiz() {
         </>
       )}
     </main>
+  );
+}
+
+type CursoAcceso = { id: string; name: string; isActive: boolean; escuela: string; modalidad: string; habilitado: boolean };
+
+// Quién puede hacer el quiz: sin cuenta (feria) y qué cursos
+function QuienPuedeHacerlo({ quizId }: { quizId: string }) {
+  const [abierto, setAbierto] = useState(false);
+  const [cursos, setCursos] = useState<CursoAcceso[] | null>(null);
+  const [error, setError] = useState("");
+
+  function cargar() {
+    fetch(`/api/quizzes/acceso?quizId=${encodeURIComponent(quizId)}`)
+      .then((r) => r.json())
+      .then((data) => {
+        setAbierto(data.abierto);
+        setCursos(data.cursos);
+      });
+  }
+
+  useEffect(() => {
+    cargar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quizId]);
+
+  async function guardar(cambio: object) {
+    setError("");
+    const res = await fetch("/api/quizzes/acceso", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ quizId, ...cambio }),
+    });
+    if (!res.ok) setError("No se pudo guardar el cambio. Probá de nuevo.");
+    cargar();
+  }
+
+  if (!cursos) return null;
+
+  return (
+    <div className="card stack-sm">
+      <div style={{ fontWeight: 650, fontSize: "1.05rem" }}>¿Quién puede hacer este quiz?</div>
+
+      <label className="row" style={{ gap: "0.6rem", cursor: "pointer", flexWrap: "nowrap", alignItems: "flex-start" }}>
+        <input type="checkbox" checked={abierto} onChange={(e) => guardar({ abierto: e.target.checked })} style={{ marginTop: "0.3rem" }} />
+        <span>
+          <b>Abierto sin cuenta (feria)</b>
+          <span className="muted" style={{ display: "block" }}>
+            Cualquiera lo puede jugar sin ingresar y no se guarda nada. No lo dejes abierto si lo usás para evaluar: sin cuenta se pueden ver las respuestas.
+          </span>
+        </span>
+      </label>
+
+      <div style={{ fontWeight: 600, marginTop: "0.5rem" }}>Cursos habilitados</div>
+      {cursos.length === 0 ? (
+        <p className="muted">Todavía no hay cursos. Crealos en Escuelas y cursos.</p>
+      ) : (
+        <div className="stack-sm" style={{ gap: "0.3rem" }}>
+          {cursos.map((c) => (
+            <label key={c.id} className="row" style={{ gap: "0.6rem", cursor: "pointer", flexWrap: "nowrap" }}>
+              <input type="checkbox" checked={c.habilitado} onChange={(e) => guardar({ courseId: c.id, habilitado: e.target.checked })} />
+              <span style={{ wordBreak: "break-word" }}>
+                {c.modalidad} · {c.escuela} · {c.name}
+                {!c.isActive && <span className="badge badge-muted" style={{ marginLeft: "0.5rem" }}>Oculto</span>}
+              </span>
+            </label>
+          ))}
+        </div>
+      )}
+      {error && <div className="notice notice-error">{error}</div>}
+    </div>
   );
 }

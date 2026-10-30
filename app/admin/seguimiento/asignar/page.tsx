@@ -134,7 +134,7 @@ export default function Asignar() {
                         <input type="checkbox" checked={elegidos.includes(a.id)} onChange={(e) => alternar([a.id], e.target.checked)} style={{ marginTop: "0.3rem" }} />
                         <span style={{ minWidth: 0 }}>
                           <span style={{ fontWeight: 600, wordBreak: "break-word" }}>{a.fullName}</span>
-                          <span className="muted"> · {a.username} · {a.cantPartidas} partida(s)</span>
+                          <span className="muted"> · {a.username} · {a.cantQuizzes} quiz(zes) hecho(s)</span>
                           <br />
                           <span className={`badge ${curso ? "" : "badge-muted"}`}>{curso ? nombreCurso(curso) : "Sin asignar"}</span>
                         </span>

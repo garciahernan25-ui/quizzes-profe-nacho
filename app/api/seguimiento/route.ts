@@ -4,7 +4,7 @@ import { students, scores, rounds, quizzes, courses, schools, modalities } from 
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { esAdmin, noAutorizado } from "../../../lib/adminAuth";
-import { notaDePartida, promedio } from "../../../lib/notas";
+import { notaDePartida, notaDelQuiz, promedio } from "../../../lib/notas";
 
 export async function GET() {
   if (!(await esAdmin())) return noAutorizado();
@@ -13,8 +13,8 @@ export async function GET() {
     const alumnos = await db.select().from(students);
     const listaQuizzes = await db.select({ id: quizzes.id, title: quizzes.title }).from(quizzes);
 
-    // Cada partida es una sección jugada. El quiz se saca de la sección
-    // (las partidas se guardan con quiz_id vacío).
+    // Notas del sistema anterior: una por sección jugada (el quiz se saca de la sección).
+    // Notas nuevas: una por intento, con el quiz directo y attempt_id.
     const partidas = await db
       .select({
         studentId: scores.playerName,
@@ -22,6 +22,7 @@ export async function GET() {
         total: scores.totalQuestions,
         quizDirecto: scores.quizId,
         quizDeLaSeccion: rounds.quizId,
+        attemptId: scores.attemptId,
       })
       .from(scores)
       .leftJoin(rounds, eq(scores.roundId, rounds.id));
@@ -31,6 +32,7 @@ export async function GET() {
         id: courses.id,
         name: courses.name,
         isActive: courses.isActive,
+        schoolId: courses.schoolId,
         escuela: schools.name,
         modalidad: modalities.name,
       })
@@ -41,13 +43,13 @@ export async function GET() {
     const alumnosConDatos = alumnos.map((alumno) => {
       const suyas = partidas
         .filter((p) => p.studentId === alumno.id)
-        .map((p) => ({ quizId: p.quizDeLaSeccion ?? p.quizDirecto, nota: notaDePartida(p.correctas, p.total) }));
+        .map((p) => ({ quizId: p.quizDeLaSeccion ?? p.quizDirecto, attemptId: p.attemptId, nota: notaDePartida(p.correctas, p.total) }));
 
-      // Promedio del alumno en cada quiz que jugó
+      // Nota del alumno en cada quiz que hizo (si tiene varios intentos, la mejor)
       const porQuiz: Record<string, number> = {};
       for (const q of listaQuizzes) {
-        const prom = promedio(suyas.filter((p) => p.quizId === q.id).map((p) => p.nota));
-        if (prom !== null) porQuiz[q.id] = prom;
+        const nota = notaDelQuiz(suyas.filter((p) => p.quizId === q.id));
+        if (nota !== null) porQuiz[q.id] = nota;
       }
 
       // Lo que escribió al registrarse (sirve para saber a qué curso asignarlo)
@@ -61,8 +63,8 @@ export async function GET() {
         username: alumno.username,
         courseId: alumno.courseId,
         textoOriginal,
-        cantPartidas: suyas.length,
-        promedio: promedio(suyas.map((p) => p.nota)),
+        cantQuizzes: Object.keys(porQuiz).length,
+        promedio: promedio(Object.values(porQuiz)),
         porQuiz,
       };
     });
