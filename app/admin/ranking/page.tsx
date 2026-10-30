@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "../../components/icons";
+import { cantidadTerminados, podioAutomatico, primerosTres } from "../../../lib/podio";
+import Podio from "./Podio";
 
 type Quiz = { id: string; title: string };
 type Curso = { id: string; name: string; escuela: string; modalidad: string; habilitado: boolean };
@@ -19,6 +21,15 @@ export default function Ranking() {
   const [courseId, setCourseId] = useState("");
   const [tabla, setTabla] = useState<Tabla | null>(null);
   const [sinConexion, setSinConexion] = useState(false);
+  // Podio: el profe lo puede largar a mano. Al volver a la tabla se anota cuántos habían terminado,
+  // para que no vuelva a salir solo hasta que termine alguien más.
+  const [podioAMano, setPodioAMano] = useState(false);
+  const [cerradoCon, setCerradoCon] = useState<number | null>(null);
+
+  function reiniciarPodio() {
+    setPodioAMano(false);
+    setCerradoCon(null);
+  }
 
   useEffect(() => {
     fetch("/api/quizzes/lista")
@@ -32,6 +43,7 @@ export default function Ranking() {
     setCursos([]);
     setCourseId("");
     setTabla(null);
+    reiniciarPodio();
   }
 
   useEffect(() => {
@@ -70,6 +82,12 @@ export default function Ranking() {
   const quiz = quizzes.find((q) => q.id === quizId);
   const curso = cursos.find((c) => c.id === courseId);
   const medallas = ["🥇", "🥈", "🥉"];
+  const mostrarPodio = !!tabla && (podioAMano || podioAutomatico(tabla.filas, cerradoCon));
+
+  function volverALaTabla() {
+    setPodioAMano(false);
+    setCerradoCon(tabla ? cantidadTerminados(tabla.filas) : null);
+  }
 
   return (
     <main className="page stack-md animate-in" style={{ paddingTop: "clamp(1rem, 3vh, 2rem)", maxWidth: "1400px" }}>
@@ -82,7 +100,7 @@ export default function Ranking() {
               <option key={q.id} value={q.id}>{q.title}</option>
             ))}
           </select>
-          <select className="select" style={{ flex: "1 1 14rem", maxWidth: "24rem" }} value={courseId} onChange={(e) => { setCourseId(e.target.value); setTabla(null); }} disabled={!quizId}>
+          <select className="select" style={{ flex: "1 1 14rem", maxWidth: "24rem" }} value={courseId} onChange={(e) => { setCourseId(e.target.value); setTabla(null); reiniciarPodio(); }} disabled={!quizId}>
             <option value="">{quizId && cursos.length === 0 ? "Ningún curso tiene este quiz" : "Elegí el curso"}</option>
             {cursos.map((c) => (
               <option key={c.id} value={c.id}>{`${c.modalidad} · ${c.escuela} · ${c.name}`}</option>
@@ -103,7 +121,21 @@ export default function Ranking() {
               {curso.escuela} · {curso.name}
               {sinConexion && <span style={{ color: "var(--danger)" }}> · sin conexión, reintentando…</span>}
             </p>
+            <div className="row" style={{ justifyContent: "center", marginTop: "0.5rem" }}>
+              {mostrarPodio ? (
+                <button className="btn btn-ghost" onClick={volverALaTabla}>Volver a la tabla</button>
+              ) : (
+                <button className="btn btn-primary" onClick={() => setPodioAMano(true)} disabled={!tabla.filas.some((f) => f.empezo)}>
+                  🏆 Mostrar podio
+                </button>
+              )}
+            </div>
           </header>
+
+          {mostrarPodio ? (
+            <Podio puestos={primerosTres(tabla.filas)} />
+          ) : (
+            <>
 
           {tabla.filas.length === 0 ? (
             <div className="card" style={{ textAlign: "center" }}>
@@ -134,6 +166,8 @@ export default function Ranking() {
                 </div>
               ))}
             </div>
+          )}
+            </>
           )}
         </div>
       )}
