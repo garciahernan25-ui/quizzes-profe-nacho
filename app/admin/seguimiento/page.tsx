@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "../../components/icons";
 import { promedio } from "../../../lib/notas";
+import { normalizar } from "../../../lib/texto";
 import { type Alumno, type DatosSeguimiento, nombreCurso, colorNota } from "./tipos";
 
 export default function Seguimiento() {
@@ -52,7 +53,10 @@ export default function Seguimiento() {
       <Link href="/admin" className="back-link"><ArrowLeft size={16} /> Volver al panel</Link>
       <div className="row between">
         <h1 className="h1">Seguimiento de alumnos</h1>
+        <div className="row" style={{ gap: "0.5rem" }}>
+        <Link href="/admin/ranking" className="btn btn-ghost btn-sm">Ranking en vivo</Link>
         <Link href="/admin/seguimiento/asignar" className="btn btn-ghost btn-sm">Asignar alumnos a cursos</Link>
+      </div>
       </div>
 
       {sinAsignar.length > 0 && (
@@ -63,6 +67,8 @@ export default function Seguimiento() {
           <Link href="/admin/seguimiento/asignar" style={{ color: "inherit", fontWeight: 650 }}>Asignarlos ahora →</Link>
         </div>
       )}
+
+      {datos.alumnos.length > 0 && <BuscarAlumno datos={datos} />}
 
       {datos.alumnos.length === 0 ? (
         <div className="card" style={{ textAlign: "center" }}>
@@ -87,6 +93,74 @@ export default function Seguimiento() {
         </div>
       )}
     </main>
+  );
+}
+
+// Buscar un alumno por nombre, o elegirlo filtrando por escuela y curso, para ver su ficha
+function BuscarAlumno({ datos }: { datos: DatosSeguimiento }) {
+  const [texto, setTexto] = useState("");
+  const [escuelaId, setEscuelaId] = useState("");
+  const [cursoId, setCursoId] = useState("");
+
+  // Escuelas que tienen al menos un curso (sin repetir)
+  const escuelas = [...new Map(datos.cursos.map((c) => [c.schoolId, `${c.modalidad} · ${c.escuela}`])).entries()];
+  const cursosDeLaEscuela = datos.cursos.filter((c) => !escuelaId || c.schoolId === escuelaId);
+  const buscando = normalizar(texto);
+
+  const resultados = datos.alumnos
+    .filter((a) => !buscando || normalizar(a.fullName).includes(buscando) || normalizar(a.username).includes(buscando))
+    .filter((a) => !cursoId || a.courseId === cursoId)
+    .filter((a) => !escuelaId || cursosDeLaEscuela.some((c) => c.id === a.courseId))
+    .sort((a, b) => a.fullName.localeCompare(b.fullName));
+  const hayFiltro = buscando || escuelaId || cursoId;
+
+  return (
+    <div className="card stack-sm">
+      <div style={{ fontWeight: 650 }}>Buscar alumno</div>
+      <input className="input" value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Nombre o usuario" />
+      <div className="row" style={{ gap: "0.5rem" }}>
+        <select
+          className="select"
+          style={{ flex: "1 1 12rem" }}
+          value={escuelaId}
+          onChange={(e) => {
+            setEscuelaId(e.target.value);
+            setCursoId("");
+          }}
+        >
+          <option value="">Todas las escuelas</option>
+          {escuelas.map(([id, nombre]) => (
+            <option key={id} value={id}>{nombre}</option>
+          ))}
+        </select>
+        <select className="select" style={{ flex: "1 1 12rem" }} value={cursoId} onChange={(e) => setCursoId(e.target.value)}>
+          <option value="">Todos los cursos</option>
+          {cursosDeLaEscuela.map((c) => (
+            <option key={c.id} value={c.id}>{escuelaId ? c.name : nombreCurso(c)}</option>
+          ))}
+        </select>
+      </div>
+
+      {hayFiltro && (
+        <div className="stack-sm" style={{ gap: "0.35rem", marginTop: "0.4rem" }}>
+          {resultados.length === 0 ? (
+            <p className="muted">No hay alumnos con esos datos.</p>
+          ) : (
+            resultados.slice(0, 50).map((a) => (
+              <Link
+                key={a.id}
+                href={`/admin/seguimiento/alumno/${a.id}`}
+                className="row between"
+                style={{ gap: "0.5rem", borderTop: "1px solid var(--border)", paddingTop: "0.35rem", color: "inherit" }}
+              >
+                <span style={{ minWidth: 0, wordBreak: "break-word", fontWeight: 600 }}>{a.fullName}</span>
+                <span className="muted" style={{ flexShrink: 0 }}>Ver ficha →</span>
+              </Link>
+            ))
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -149,9 +223,11 @@ function Grupo({
           .map((a) => (
             <div key={a.id} className="card row between" style={{ padding: "0.9rem 1.1rem" }}>
               <div style={{ minWidth: 0 }}>
-                <div style={{ fontWeight: 600, wordBreak: "break-word" }}>{a.fullName}</div>
+                <Link href={`/admin/seguimiento/alumno/${a.id}`} style={{ fontWeight: 600, wordBreak: "break-word", color: "inherit" }}>
+                  {a.fullName}
+                </Link>
                 {mostrarTextoOriginal && <div className="muted" style={{ wordBreak: "break-word" }}>Escribió: {a.textoOriginal}</div>}
-                <div className="muted">Partidas jugadas: {a.cantPartidas}</div>
+                <div className="muted">Quizzes hechos: {a.cantQuizzes}</div>
               </div>
               <div className="row" style={{ gap: "0.75rem", flexShrink: 0 }}>
                 <span style={{ fontWeight: 700, color: a.promedio !== null ? colorNota(a.promedio) : "var(--text-muted)" }}>

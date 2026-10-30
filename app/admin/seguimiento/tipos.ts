@@ -5,7 +5,7 @@ export type Alumno = {
   username: string;
   courseId: string | null;
   textoOriginal: string;
-  cantPartidas: number;
+  cantQuizzes: number;
   promedio: number | null;
   porQuiz: Record<string, number>;
 };
@@ -14,6 +14,7 @@ export type Curso = {
   id: string;
   name: string;
   isActive: boolean;
+  schoolId: string;
   escuela: string;
   modalidad: string;
 };
