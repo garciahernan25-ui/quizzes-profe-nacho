@@ -20,6 +20,8 @@ export default function EditarPregunta() {
   const [guardando, setGuardando] = useState(false);
   const [subiendo, setSubiendo] = useState(false);
   const [subiendoOp, setSubiendoOp] = useState<number | null>(null);
+  // Si el quiz ya se jugó y cambió la respuesta correcta: cuántos alumnos cambiarían de nota
+  const [recalculo, setRecalculo] = useState<{ quizId: string; alumnos: number } | null>(null);
 
   // Refs para inputs ocultos de archivo
   const inputPreguntaRef = useRef<HTMLInputElement>(null);
@@ -119,6 +121,8 @@ export default function EditarPregunta() {
     setGuardando(false);
     if (res.ok) {
       setMensaje("✓ ¡Cambios guardados!");
+      const data = await res.json().catch(() => ({}));
+      setRecalculo(data.quizId && data.respuestasQueCambian > 0 ? { quizId: data.quizId, alumnos: data.alumnosQueCambian } : null);
     } else {
       setMensaje("✗ Hubo un error al guardar.");
     }
@@ -198,6 +202,21 @@ export default function EditarPregunta() {
         </button>
 
         {mensaje && <Notice message={mensaje} success={exito} />}
+
+        {recalculo && (
+          <div className="card stack-sm" style={{ borderColor: "var(--warning)", background: "var(--warning-soft)" }}>
+            <b>Este quiz ya se jugó y cambiaste la respuesta correcta.</b>
+            <span>
+              {recalculo.alumnos === 0
+                ? "Cambian algunas respuestas, pero ninguna nota."
+                : `Si recalculás, cambia la nota de ${recalculo.alumnos} alumno(s).`}{" "}
+              Antes de aplicar vas a ver quiénes son y cómo cambia cada nota.
+            </span>
+            <Link href={`/admin/recalcular/${recalculo.quizId}`} className="btn btn-primary btn-sm" style={{ alignSelf: "flex-start" }}>
+              Revisar y recalcular notas
+            </Link>
+          </div>
+        )}
       </div>
     </main>
   );
