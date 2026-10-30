@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 import { db } from "../../../lib/db";
-import { quizzes } from "../../../lib/db/schema";
+import { quizzes, students } from "../../../lib/db/schema";
 import { eq } from "drizzle-orm";
 import { cookies } from "next/headers";
 import Link from "next/link";
@@ -17,8 +17,13 @@ export default async function QuizPage({
   const { slug } = await params;
 
   const cookieStore = await cookies();
-  const studentName = cookieStore.get("student_name")?.value || null;
   const studentId = await alumnoLogueado();
+  // El nombre sale de la base (por si el profe lo corrigió al aprobarlo); la cookie queda de respaldo
+  const studentName = studentId
+    ? ((await db.select({ fullName: students.fullName }).from(students).where(eq(students.id, studentId)))[0]?.fullName ??
+      cookieStore.get("student_name")?.value ??
+      null)
+    : null;
 
   const quiz = (await db.select().from(quizzes).where(eq(quizzes.slug, slug)))[0];
 
@@ -30,6 +35,12 @@ export default async function QuizPage({
   const acceso = studentId ? await verificarAcceso(db, studentId, quiz.id) : null;
 
   if (acceso && acceso.tipo !== "sin-cuenta") {
+    if (acceso.tipo === "pendiente") {
+      return <Aviso titulo="Tu usuario está esperando que el profe lo apruebe" texto="Apenas te apruebe, vas a ver tus quizzes en el inicio." />;
+    }
+    if (acceso.tipo === "bloqueado") {
+      return <Aviso titulo="Tu usuario está bloqueado" texto="Hablá con el profe." />;
+    }
     if (acceso.tipo === "sin-curso") {
       return <Aviso titulo="Todavía no tenés curso asignado" texto="Pedile al profe que te asigne a tu curso para poder hacer los quizzes." />;
     }

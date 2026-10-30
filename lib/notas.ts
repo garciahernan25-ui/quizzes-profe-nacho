@@ -22,3 +22,17 @@ export function notaDelQuiz(partidas: { attemptId: string | null; nota: number }
   for (const p of partidas) if (p.attemptId) notas.push(Math.round(p.nota * 10) / 10);
   return notas.length === 0 ? null : Math.max(...notas);
 }
+
+// Si el admin editó la nota a mano, manda esa (aunque después haya otro intento mejor)
+export function notaFinal(calculada: number | null, editada: number | null | undefined) {
+  return editada ?? calculada;
+}
+
+// Lee una nota escrita a mano ("8", "8,5", "8.5"). Devuelve null si no es un número de 0 a 10.
+// (La usan la ficha del navegador y la API, para que las dos acepten lo mismo)
+export function leerNota(texto: string) {
+  const limpio = texto.trim().replace(",", ".");
+  if (!/^\d{1,2}(\.\d+)?$/.test(limpio)) return null;
+  const nota = Math.round(Number(limpio) * 10) / 10;
+  return nota >= 0 && nota <= 10 ? nota : null;
+}

@@ -528,3 +528,63 @@ input[type="file"]::file-selector-button:hover { background: var(--surface-hover
 .animate-in { animation: fade-up 0.4s var(--ease) both; }
 
 img { max-width: 100%; height: auto; }
+
+/* Podio del ranking en vivo (pensado para proyectar) */
+.podio {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+  gap: clamp(0.5rem, 2vw, 1.5rem);
+  min-height: 60vh;
+  padding-top: 1rem;
+}
+.podio-puesto { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; min-width: 0; text-align: center; }
+.podio-medalla { font-size: clamp(2.5rem, 7vw, 5.5rem); line-height: 1; }
+.podio-nombre {
+  font-size: clamp(1.1rem, 3.4vw, 2.8rem);
+  font-weight: 800;
+  line-height: 1.1;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.podio-puntos { font-size: clamp(1rem, 2.6vw, 2rem); font-weight: 700; color: var(--text-secondary); }
+.podio-bloque {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 0.6rem;
+  border-radius: var(--r-lg) var(--r-lg) 0 0;
+  font-size: clamp(2rem, 6vw, 4.5rem);
+  font-weight: 800;
+  color: rgba(0, 0, 0, 0.55);
+  transform-origin: bottom;
+  animation: podio-subir 0.9s var(--ease) both;
+}
+.podio-1 .podio-bloque { height: clamp(9rem, 32vh, 22rem); background: linear-gradient(180deg, #ffe17a, #e6a91c); animation-delay: 0.9s; }
+.podio-2 .podio-bloque { height: clamp(6.5rem, 23vh, 16rem); background: linear-gradient(180deg, #eef0f5, #a9afbd); animation-delay: 0.45s; }
+.podio-3 .podio-bloque { height: clamp(5rem, 17vh, 12rem); background: linear-gradient(180deg, #f2b98a, #b8692f); animation-delay: 0s; }
+.podio-1 .podio-texto { animation: fade-up 0.6s var(--ease) 1.6s both; }
+.podio-2 .podio-texto { animation: fade-up 0.6s var(--ease) 1.15s both; }
+.podio-3 .podio-texto { animation: fade-up 0.6s var(--ease) 0.7s both; }
+@keyframes podio-subir { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+
+/* Confeti: papelitos de colores que caen tres veces y se van */
+.confeti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 50; }
+.confeti span {
+  position: absolute;
+  top: -5vh;
+  width: 0.7rem;
+  height: 1.1rem;
+  border-radius: 2px;
+  animation: confeti-caer var(--dur) linear var(--espera) 3 both;
+}
+@keyframes confeti-caer {
+  from { transform: translate3d(0, 0, 0) rotate(0deg); }
+  to { transform: translate3d(var(--deriva), 112vh, 0) rotate(var(--giro)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .confeti { display: none; }
+  .podio-bloque, .podio-texto { animation: none !important; }
+}

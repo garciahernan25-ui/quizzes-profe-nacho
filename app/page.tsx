@@ -7,24 +7,34 @@ import LogoutButton from "./LogoutButton";
 import Navbar from "./components/Navbar";
 import { alumnoLogueado } from "../lib/estudiante";
 import { quizzesDelCurso } from "../lib/intentos";
+import EsperandoAprobacion from "./EsperandoAprobacion";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
   // Leer cookie de sesión del estudiante
   const cookieStore = await cookies();
-  const studentName = cookieStore.get("student_name")?.value;
 
   // Con cuenta: los quizzes habilitados para su curso. Sin cuenta: solo los abiertos (feria).
   const studentId = await alumnoLogueado();
   const alumno = studentId
-    ? (await db.select({ courseId: students.courseId }).from(students).where(eq(students.id, studentId)))[0]
+    ? (
+        await db
+          .select({ courseId: students.courseId, status: students.status, fullName: students.fullName })
+          .from(students)
+          .where(eq(students.id, studentId))
+      )[0]
     : undefined;
-  const sinCurso = !!alumno && !alumno.courseId;
+  // El nombre sale de la base (por si el profe lo corrigió); la cookie queda de respaldo
+  const studentName = alumno?.fullName ?? cookieStore.get("student_name")?.value;
+  // Tiene la cookie pero el alumno ya no está: el profe rechazó el registro (o lo borró)
+  const registroBorrado = !!studentId && !alumno;
+  const aprobado = alumno?.status === "aprobado";
+  const sinCurso = aprobado && !alumno.courseId;
 
   let listaQuizzes: (typeof quizzes.$inferSelect)[] = [];
-  if (alumno?.courseId) listaQuizzes = await quizzesDelCurso(db, alumno.courseId);
-  else if (!alumno) listaQuizzes = await db.select().from(quizzes).where(eq(quizzes.isPublished, true));
+  if (aprobado && alumno.courseId) listaQuizzes = await quizzesDelCurso(db, alumno.courseId);
+  else if (!studentId) listaQuizzes = await db.select().from(quizzes).where(eq(quizzes.isPublished, true));
   listaQuizzes.sort((a, b) => a.title.localeCompare(b.title, "es", { numeric: true }));
 
   return (
@@ -51,7 +61,20 @@ export default async function Home() {
           <p className="lead">Elegí un quiz para empezar. Sumás puntos por acertar rápido.</p>
         </header>
 
-        {sinCurso ? (
+        {alumno?.status === "pendiente" ? (
+          <EsperandoAprobacion />
+        ) : alumno?.status === "bloqueado" ? (
+          <div className="card" style={{ textAlign: "center" }}>
+            <p className="lead">Tu usuario está bloqueado. Hablá con el profe.</p>
+          </div>
+        ) : registroBorrado ? (
+          <div className="card stack-md" style={{ textAlign: "center" }}>
+            <p className="lead">
+              Tu usuario ya no existe. Si te registraste hace poco, el profe no lo aprobó: registrate de nuevo con tu nombre y apellido reales.
+            </p>
+            <Link href="/registro" className="btn btn-primary" style={{ alignSelf: "center" }}>Registrarme de nuevo</Link>
+          </div>
+        ) : sinCurso ? (
           <div className="card" style={{ textAlign: "center" }}>
             <p className="lead">Todavía no tenés curso asignado. Pedile al profe que te asigne a tu curso.</p>
           </div>

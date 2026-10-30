@@ -38,7 +38,7 @@ Los quizzes son públicos y se puede entrar sin cuenta para probarlos. El regist
 
 - Acceso a los quizzes de su curso por enlace directo o código QR.
 - Un solo intento por quiz, controlado en el servidor. Si se corta internet, retoma donde quedó.
-- Registro eligiendo modalidad, escuela y curso de listas que arma el docente (sin escribir a mano).
+- Registro eligiendo modalidad, escuela y curso de listas que arma el docente (sin escribir a mano). La cuenta queda pendiente hasta que el docente la aprueba, y la pantalla de espera se actualiza sola.
 - Preguntas y opciones con imágenes, y explicación al responder cada una.
 - Temporizador configurable por pregunta (5, 10, 15, 20, 30 segundos o sin límite).
 - Nota final en escala de 0 a 10 (solo cuentan las respuestas correctas) y puntos con bonus por rapidez para el ranking.
@@ -61,7 +61,10 @@ Los quizzes son públicos y se puede entrar sin cuenta para probarlos. El regist
 - Habilitación de cada quiz por curso, y opción de abrirlo sin cuenta.
 - Ficha de cada alumno con nota, puntos, fecha y duración de cada quiz, con búsqueda por nombre, escuela y curso.
 - Habilitar otro intento (cuenta la mejor nota) o borrar la nota de un alumno en un quiz.
-- Ranking en vivo para proyectar en el aula, que se actualiza cada 3 segundos.
+- Aprobación de alumnos nuevos (de a uno, corrigiendo el nombre, o todo un curso junto), con el número de pendientes a la vista en el panel. Cambio de nombre y bloqueo desde la ficha.
+- Edición manual de la nota de un quiz, con registro de la nota original, la fecha y quién la cambió.
+- Recálculo de las notas de un quiz ya jugado cuando se corrige la respuesta correcta de una pregunta, con vista previa antes de aplicar.
+- Ranking en vivo para proyectar en el aula, que se actualiza cada 3 segundos, con podio y confeti al terminar.
 
 ![Seguimiento de alumnos](docs/seguimiento.png)
 
@@ -88,7 +91,7 @@ Los quizzes son públicos y se puede entrar sin cuenta para probarlos. El regist
 - **Generación de códigos QR descargables en PDF** con qrcode.react y jsPDF, para llevar los quizzes del entorno digital al aula física.
 - **Autenticación con distintas modalidades de usuario** y panel de administración protegido.
 - **Tiempo medido en el servidor**: el navegador del alumno nunca recibe la respuesta correcta antes de responder, y el servidor decide si llegó a tiempo.
-- **Pruebas con Vitest** sobre el cálculo de notas y puntos, la regla de un intento, habilitar y borrar intentos y el ranking, contra una base de prueba armada con los mismos scripts SQL que producción.
+- **Pruebas con Vitest** sobre el cálculo de notas y puntos, la regla de un intento, habilitar y borrar intentos, el ranking y su podio, la aprobación de alumnos, las notas editadas y el recálculo, contra una base de prueba armada con los mismos scripts SQL que producción.
 
 ![Pruebas unitarias con Vitest](docs/tests.png)
 

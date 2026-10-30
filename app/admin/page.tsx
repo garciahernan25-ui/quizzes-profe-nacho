@@ -9,9 +9,11 @@ import BotonSalir from "./BotonSalir";
 import BotonBorrarQuiz from "./BotonBorrarQuiz";
 import Navbar from "../components/Navbar";
 import { Plus, ChartBar, Trophy } from "../components/icons";
+import { cantidadPendientes } from "../../lib/alumnos";
 
 export default async function AdminPage() {
   const listaQuizzes = await db.select().from(quizzes);
+  const cantPendientes = await cantidadPendientes(db);
 
   const filas = await Promise.all(
     listaQuizzes.map(async (quiz) => {
@@ -46,6 +48,12 @@ export default async function AdminPage() {
           <Link href="/admin/nuevo-quiz" className="btn btn-primary"><Plus size={17} /> Nuevo quiz</Link>
           <Link href="/admin/nueva-seccion" className="btn btn-ghost"><Plus size={17} /> Nueva sección</Link>
           <Link href="/admin/preguntas" className="btn btn-ghost">Gestionar preguntas</Link>
+          <Link href="/admin/pendientes" className={`btn ${cantPendientes > 0 ? "btn-primary" : "btn-ghost"}`}>
+            Alumnos pendientes
+            <span className="badge" style={{ marginLeft: "0.15rem", ...(cantPendientes > 0 ? { background: "var(--warning)", color: "#000", borderColor: "transparent" } : {}) }}>
+              {cantPendientes}
+            </span>
+          </Link>
           <Link href="/admin/seguimiento" className="btn btn-ghost"><ChartBar size={16} /> Seguimiento de alumnos</Link>
           <Link href="/admin/escuelas" className="btn btn-ghost">Escuelas y cursos</Link>
           <Link href="/admin/ranking" className="btn btn-ghost"><Trophy size={16} /> Ranking en vivo</Link>

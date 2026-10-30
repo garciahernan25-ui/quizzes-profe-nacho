@@ -4,12 +4,13 @@ import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import { and, eq, inArray, isNull, or, sql, type SQL } from "drizzle-orm";
 import { v4 as uuid } from "uuid";
 import * as schema from "./db/schema";
-import { notaDePartida, notaDelQuiz } from "./notas";
+import { notaDePartida, notaDelQuiz, notaFinal } from "./notas";
 import { puntosDeRespuesta, restanteMs, seAcaboElTiempo } from "./puntaje";
+import { clave, edicionesVigentes, historialDeEdiciones } from "./ediciones";
 
 export type DB = LibSQLDatabase<typeof schema>;
 
-const { quizzes, rounds, questions, scores, students, courses, schools, modalities, quizCourses, attempts, attemptAnswers, extraAttempts } =
+const { quizzes, rounds, questions, scores, students, courses, schools, modalities, quizCourses, attempts, attemptAnswers, extraAttempts, gradeEdits } =
   schema;
 
 type Intento = typeof attempts.$inferSelect;
@@ -25,7 +26,7 @@ export function cupo(intentosHechos: number, tieneNotaVieja: boolean, intentosEx
 }
 
 // Notas del sistema anterior (una por sección jugada) de un alumno en un quiz
-async function notasViejas(db: DB, studentId: string, quizId: string) {
+export async function notasViejas(db: DB, studentId: string, quizId: string) {
   const filas = await db
     .select({
       correctas: scores.correctAnswers,
@@ -53,6 +54,8 @@ async function estadoDeCupo(db: DB, studentId: string, quizId: string) {
 
 export type Acceso =
   | { tipo: "sin-cuenta" }
+  | { tipo: "pendiente" }
+  | { tipo: "bloqueado" }
   | { tipo: "sin-curso" }
   | { tipo: "no-habilitado" }
   | { tipo: "ya-respondio"; nota: number | null }
@@ -60,8 +63,11 @@ export type Acceso =
 
 // ¿Este alumno puede hacer (o seguir) este quiz? Lo usan la página y todas las APIs del juego.
 export async function verificarAcceso(db: DB, studentId: string, quizId: string): Promise<Acceso> {
-  const alumno = (await db.select({ courseId: students.courseId }).from(students).where(eq(students.id, studentId)))[0];
+  const alumno = (await db.select({ courseId: students.courseId, status: students.status }).from(students).where(eq(students.id, studentId)))[0];
   if (!alumno) return { tipo: "sin-cuenta" };
+  // Un alumno que el profe todavía no aprobó (o que bloqueó) no puede hacer nada
+  if (alumno.status === "pendiente") return { tipo: "pendiente" };
+  if (alumno.status === "bloqueado") return { tipo: "bloqueado" };
   if (!alumno.courseId) return { tipo: "sin-curso" };
 
   const habilitado = await db
@@ -75,11 +81,17 @@ export async function verificarAcceso(db: DB, studentId: string, quizId: string)
   const enCurso = estado.intentos.find((i) => !i.finishedAt);
   if (enCurso) return { tipo: "puede", intentoEnCurso: enCurso.id };
   if (estado.quedan) return { tipo: "puede", intentoEnCurso: null };
-  return { tipo: "ya-respondio", nota: await notaDelAlumnoEnQuiz(db, studentId, quizId) };
+  return { tipo: "ya-respondio", nota: await notaQueCuenta(db, studentId, quizId) };
 }
 
-// Nota que cuenta (la mejor) de un alumno en un quiz
-async function notaDelAlumnoEnQuiz(db: DB, studentId: string, quizId: string) {
+// Nota que cuenta de un alumno en un quiz: la editada a mano si hay, si no la mejor de los intentos
+export async function notaQueCuenta(db: DB, studentId: string, quizId: string) {
+  const editada = (await edicionesVigentes(db, { studentId, quizId })).get(clave(studentId, quizId));
+  return notaFinal(await notaDeLosIntentos(db, studentId, quizId), editada?.grade);
+}
+
+// La mejor nota de los intentos (sin mirar si el admin la editó)
+export async function notaDeLosIntentos(db: DB, studentId: string, quizId: string) {
   const viejas = await notasViejas(db, studentId, quizId);
   const nuevas = await db
     .select({ attemptId: scores.attemptId, correctas: scores.correctAnswers, total: scores.totalQuestions })
@@ -171,6 +183,14 @@ export async function empezarOContinuar(db: DB, studentId: string, quizId: strin
     }
   }
   return estadoDelIntento(db, intentoId, ahora);
+}
+
+// Si el profe bloqueó la cuenta (o la borró) en medio de un intento, tampoco puede seguir respondiendo
+async function cuentaSinPermiso(db: DB, studentId: string): Promise<EstadoJuego | null> {
+  const alumno = (await db.select({ status: students.status }).from(students).where(eq(students.id, studentId)))[0];
+  if (!alumno) return { tipo: "bloqueado", acceso: { tipo: "sin-cuenta" } };
+  if (alumno.status !== "aprobado") return { tipo: "bloqueado", acceso: { tipo: alumno.status } };
+  return null;
 }
 
 async function buscarIntento(db: DB, studentId: string, intentoId: string) {
@@ -338,6 +358,8 @@ export async function responder(
   elegida: number | null,
   ahora = Date.now()
 ): Promise<ResultadoRespuesta | EstadoJuego> {
+  const sinPermiso = await cuentaSinPermiso(db, studentId);
+  if (sinPermiso) return sinPermiso;
   const intento = await buscarIntento(db, studentId, intentoId);
   if (!intento) return { tipo: "no-encontrado" };
   if (intento.finishedAt || intento.shownAtMs === null) {
@@ -376,6 +398,8 @@ export async function responder(
 }
 
 export async function siguiente(db: DB, studentId: string, intentoId: string, ahora = Date.now()): Promise<EstadoJuego> {
+  const sinPermiso = await cuentaSinPermiso(db, studentId);
+  if (sinPermiso) return sinPermiso;
   const intento = await buscarIntento(db, studentId, intentoId);
   if (!intento) return { tipo: "no-encontrado" };
   if (!intento.finishedAt && intento.shownAtMs === null) await avanzar(db, intento, ahora);
@@ -392,7 +416,7 @@ export async function habilitarOtroIntento(db: DB, studentId: string, quizId: st
   return { ok: true as const };
 }
 
-// Borra todo lo de ESE alumno en ESE quiz: intentos, respuestas, notas (nuevas y viejas) e intentos extra.
+// Borra todo lo de ESE alumno en ESE quiz: intentos, respuestas, notas (nuevas, viejas y editadas) e intentos extra.
 // Queda como si nunca lo hubiera hecho.
 export async function borrarNota(db: DB, studentId: string, quizId: string) {
   const delQuiz = and(eq(attempts.studentId, studentId), eq(attempts.quizId, quizId));
@@ -405,6 +429,7 @@ export async function borrarNota(db: DB, studentId: string, quizId: string) {
   const pasos = [
     db.delete(scores).where(and(eq(scores.playerName, studentId), isNull(scores.attemptId), or(...notasViejasDelQuiz))),
     db.delete(extraAttempts).where(and(eq(extraAttempts.studentId, studentId), eq(extraAttempts.quizId, quizId))),
+    db.delete(gradeEdits).where(and(eq(gradeEdits.studentId, studentId), eq(gradeEdits.quizId, quizId))),
   ] as const;
   // Todo junto: si algo falla, no se borra nada
   if (idsIntentos.length > 0) {
@@ -424,7 +449,15 @@ export async function borrarNota(db: DB, studentId: string, quizId: string) {
 export async function fichaDelAlumno(db: DB, studentId: string) {
   const alumno = (
     await db
-      .select({ id: students.id, fullName: students.fullName, username: students.username, curso: courses.name, escuela: schools.name, modalidad: modalities.name })
+      .select({
+        id: students.id,
+        fullName: students.fullName,
+        username: students.username,
+        status: students.status,
+        curso: courses.name,
+        escuela: schools.name,
+        modalidad: modalities.name,
+      })
       .from(students)
       .leftJoin(courses, eq(students.courseId, courses.id))
       .leftJoin(schools, eq(courses.schoolId, schools.id))
@@ -437,6 +470,8 @@ export async function fichaDelAlumno(db: DB, studentId: string) {
   const intentos = await db.select().from(attempts).where(eq(attempts.studentId, studentId));
   const totales = new Map<string, Awaited<ReturnType<typeof totalesDelIntento>>>();
   for (const i of intentos) totales.set(i.id, await totalesDelIntento(db, i.id));
+  const vigentes = await edicionesVigentes(db, { studentId });
+  const historial = await historialDeEdiciones(db, { studentId });
 
   const filas = [];
   for (const q of listaQuizzes) {
@@ -459,16 +494,23 @@ export async function fichaDelAlumno(db: DB, studentId: string) {
       };
     });
     const notaVieja = viejas.length > 0 ? notaDelQuiz(viejas.map((v) => ({ attemptId: null, nota: notaDePartida(v.correctas, v.total) }))) : null;
-    const nota = notaDelQuiz([
+    const notaCalculada = notaDelQuiz([
       ...(notaVieja !== null ? [{ attemptId: null, nota: notaVieja }] : []),
       ...listaIntentos.filter((i) => i.nota !== null).map((i) => ({ attemptId: i.id, nota: i.nota! })),
     ]);
+    const editada = vigentes.get(clave(studentId, q.id));
     const c = await estadoDeCupo(db, studentId, q.id);
 
     filas.push({
       quizId: q.id,
       titulo: q.title,
-      nota,
+      nota: notaFinal(notaCalculada, editada?.grade),
+      notaCalculada,
+      editada: editada ? { nota: editada.grade, fecha: editada.editedAt.getTime(), por: editada.editedBy } : null,
+      // Registro de todos los cambios a mano de este quiz (también los que después se quitaron)
+      cambios: historial
+        .filter((e) => e.quizId === q.id)
+        .map((e) => ({ id: e.id, nota: e.grade, anterior: e.previousGrade, fecha: e.editedAt.getTime(), por: e.editedBy })),
       tieneIntentoDisponible: c.quedan || listaIntentos.some((i) => i.enCurso),
       anterior:
         notaVieja !== null
@@ -494,7 +536,11 @@ export function ordenarRanking(filas: FilaRanking[]) {
 }
 
 export async function ranking(db: DB, quizId: string, courseId: string) {
-  const alumnos = await db.select({ id: students.id, nombre: students.fullName }).from(students).where(eq(students.courseId, courseId));
+  // Solo los alumnos aprobados (los pendientes y los bloqueados no aparecen)
+  const alumnos = await db
+    .select({ id: students.id, nombre: students.fullName })
+    .from(students)
+    .where(and(eq(students.courseId, courseId), eq(students.status, "aprobado")));
   const ids = alumnos.map((a) => a.id);
   const intentos = ids.length > 0 ? await db.select().from(attempts).where(and(eq(attempts.quizId, quizId), inArray(attempts.studentId, ids))) : [];
 

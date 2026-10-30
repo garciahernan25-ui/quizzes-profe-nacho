@@ -215,6 +215,13 @@ export default function Juego({
       } else if (a.tipo === "no-habilitado") titulo = "Este quiz no está habilitado para tu curso";
       else if (a.tipo === "sin-curso") titulo = "Todavía no tenés curso asignado";
       else if (a.tipo === "sin-cuenta") titulo = "Tenés que ingresar con tu cuenta";
+      else if (a.tipo === "pendiente") {
+        titulo = "Tu usuario está esperando que el profe lo apruebe";
+        texto = "Volvé al inicio: apenas te apruebe, vas a ver tus quizzes.";
+      } else if (a.tipo === "bloqueado") {
+        titulo = "Tu usuario está bloqueado";
+        texto = "Hablá con el profe.";
+      }
     }
 
     if (estado.tipo === "final") {
