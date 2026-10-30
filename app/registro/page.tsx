@@ -58,7 +58,7 @@ export default function Registro() {
     const data = await res.json();
     setGuardando(false);
     if (data.ok) {
-      setMensaje("✓ ¡Cuenta creada! Ya podés iniciar sesión.");
+      setMensaje("✓ ¡Cuenta creada! Iniciá sesión: el profe tiene que aprobar tu usuario antes de que veas los quizzes.");
     } else {
       setMensaje("✗ " + (data.error || "No se pudo registrar."));
     }

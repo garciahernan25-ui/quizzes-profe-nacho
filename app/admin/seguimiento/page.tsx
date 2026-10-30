@@ -226,8 +226,12 @@ function Grupo({
                 <Link href={`/admin/seguimiento/alumno/${a.id}`} style={{ fontWeight: 600, wordBreak: "break-word", color: "inherit" }}>
                   {a.fullName}
                 </Link>
+                {a.bloqueado && <span className="badge" style={{ marginLeft: "0.5rem", color: "var(--danger)", borderColor: "var(--danger-border)" }}>Bloqueado</span>}
                 {mostrarTextoOriginal && <div className="muted" style={{ wordBreak: "break-word" }}>Escribió: {a.textoOriginal}</div>}
-                <div className="muted">Quizzes hechos: {a.cantQuizzes}</div>
+                <div className="muted">
+                  Quizzes hechos: {a.cantQuizzes}
+                  {a.editadas.length > 0 && <span title="Tiene notas cambiadas a mano"> · ✎ {a.editadas.length} nota(s) editada(s) a mano</span>}
+                </div>
               </div>
               <div className="row" style={{ gap: "0.75rem", flexShrink: 0 }}>
                 <span style={{ fontWeight: 700, color: a.promedio !== null ? colorNota(a.promedio) : "var(--text-muted)" }}>

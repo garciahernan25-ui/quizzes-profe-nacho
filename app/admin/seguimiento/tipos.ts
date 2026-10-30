@@ -4,7 +4,9 @@ export type Alumno = {
   fullName: string;
   username: string;
   courseId: string | null;
+  bloqueado: boolean;
   textoOriginal: string;
+  editadas: string[]; // quizzes con la nota editada a mano
   cantQuizzes: number;
   promedio: number | null;
   porQuiz: Record<string, number>;
