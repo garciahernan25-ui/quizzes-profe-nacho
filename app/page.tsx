@@ -1,20 +1,31 @@
 import { db } from "../lib/db";
-import { quizzes } from "../lib/db/schema";
+import { quizzes, students } from "../lib/db/schema";
 import { eq } from "drizzle-orm";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import LogoutButton from "./LogoutButton";
 import Navbar from "./components/Navbar";
+import { alumnoLogueado } from "../lib/estudiante";
+import { quizzesDelCurso } from "../lib/intentos";
+
+export const dynamic = "force-dynamic";
 
 export default async function Home() {
   // Leer cookie de sesión del estudiante
   const cookieStore = await cookies();
   const studentName = cookieStore.get("student_name")?.value;
 
-  const listaQuizzes = await db
-    .select()
-    .from(quizzes)
-    .where(eq(quizzes.isPublished, true));
+  // Con cuenta: los quizzes habilitados para su curso. Sin cuenta: solo los abiertos (feria).
+  const studentId = await alumnoLogueado();
+  const alumno = studentId
+    ? (await db.select({ courseId: students.courseId }).from(students).where(eq(students.id, studentId)))[0]
+    : undefined;
+  const sinCurso = !!alumno && !alumno.courseId;
+
+  let listaQuizzes: (typeof quizzes.$inferSelect)[] = [];
+  if (alumno?.courseId) listaQuizzes = await quizzesDelCurso(db, alumno.courseId);
+  else if (!alumno) listaQuizzes = await db.select().from(quizzes).where(eq(quizzes.isPublished, true));
+  listaQuizzes.sort((a, b) => a.title.localeCompare(b.title, "es", { numeric: true }));
 
   return (
     <>
@@ -40,9 +51,13 @@ export default async function Home() {
           <p className="lead">Elegí un quiz para empezar. Sumás puntos por acertar rápido.</p>
         </header>
 
-        {listaQuizzes.length === 0 ? (
+        {sinCurso ? (
           <div className="card" style={{ textAlign: "center" }}>
-            <p className="lead">Todavía no hay quizzes publicados.</p>
+            <p className="lead">Todavía no tenés curso asignado. Pedile al profe que te asigne a tu curso.</p>
+          </div>
+        ) : listaQuizzes.length === 0 ? (
+          <div className="card" style={{ textAlign: "center" }}>
+            <p className="lead">{alumno ? "Todavía no hay quizzes para tu curso." : "Todavía no hay quizzes abiertos."}</p>
           </div>
         ) : (
           <section className="grid-cards">
