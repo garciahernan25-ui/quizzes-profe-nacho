@@ -143,7 +143,11 @@ TURSO_AUTH_TOKEN=
 BLOB_READ_WRITE_TOKEN=
 ADMIN_PASSWORD=
 AUTH_SECRET=
+# Opcional: token compartido con la Agenda docente (mínimo 32 caracteres)
+AGENDA_TOKEN=
 ```
+
+Con `AGENDA_TOKEN` configurado, la Agenda docente puede leer las notas de los quizzes desde `GET /api/agenda/notas` (encabezado `Authorization: Bearer <token>`). Es solo lectura y devuelve la misma nota que muestra el seguimiento.
 
 ## Tests
 
